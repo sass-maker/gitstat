@@ -13,6 +13,7 @@ import type {
   ActivityEvent,
   PunchCardData,
 } from '../types'
+import { matchesExclusion } from './filters'
 
 const API_BASE = 'https://api.github.com'
 const PROXY_BASE = '/api/gh'
@@ -379,15 +380,52 @@ export async function getAllRepos(
 }
 
 /**
+ * Fetch detailed per-file diff for a single commit.
+ * Used to apply line-type exclusions to aggregate stats.
+ */
+async function getCommitDetails(
+  repo: string,
+  sha: string,
+  token?: string,
+): Promise<{ additions: number; deletions: number; files: { filename: string; additions: number; deletions: number }[] } | null> {
+  try {
+    const data = await ghFetch(`/repos/${repo}/commits/${sha}`, token)
+    if (!data) return null
+    return {
+      additions: data.stats?.additions || 0,
+      deletions: data.stats?.deletions || 0,
+      files: (data.files || []).map((f: any) => ({
+        filename: f.filename || '',
+        additions: f.additions || 0,
+        deletions: f.deletions || 0,
+      })),
+    }
+  } catch {
+    return null
+  }
+}
+
+export interface GetRepoCommitsOptions {
+  maxCommits?: number
+  exclusions?: string[]
+}
+
+/**
  * Fetch recent commits by a specific author from a repo.
  * Returns up to `maxCommits` commits with messages for AI detection.
+ * When `exclusions` are provided, per-commit file diffs are fetched so
+ * excluded-file line changes can be subtracted from aggregate stats.
  */
 export async function getRepoCommits(
   repo: string,
   authorLogin: string,
   token?: string,
-  maxCommits = 100,
+  opts: number | GetRepoCommitsOptions = 100,
 ): Promise<CommitInfo[]> {
+  const options: GetRepoCommitsOptions = typeof opts === 'number' ? { maxCommits: opts } : opts
+  const maxCommits = options.maxCommits ?? 100
+  const exclusions = options.exclusions ?? []
+  const includeFileDiffs = exclusions.length > 0
   const commits: CommitInfo[] = []
   let page = 1
   const perPage = Math.min(maxCommits, 100)
@@ -401,7 +439,7 @@ export async function getRepoCommits(
       if (!data || !Array.isArray(data) || data.length === 0) break
 
       for (const c of data) {
-        commits.push({
+        const commit: CommitInfo = {
           repo,
           sha: c.sha,
           message: c.commit?.message || '',
@@ -409,7 +447,8 @@ export async function getRepoCommits(
           authorLogin: c.author?.login || null,
           authorName: c.commit?.author?.name || '',
           authorEmail: c.commit?.author?.email || '',
-        })
+        }
+        commits.push(commit)
         if (commits.length >= maxCommits) break
       }
 
@@ -417,6 +456,29 @@ export async function getRepoCommits(
       page++
     } catch {
       break
+    }
+  }
+
+  if (includeFileDiffs && commits.length > 0) {
+    const details = await Promise.all(
+      commits.map((c) => getCommitDetails(repo, c.sha, token)),
+    )
+    for (let i = 0; i < commits.length; i++) {
+      const detail = details[i]
+      if (!detail) continue
+      const commit = commits[i]
+      let excludedAdditions = 0
+      let excludedDeletions = 0
+      for (const file of detail.files) {
+        if (matchesExclusion(file.filename, exclusions)) {
+          excludedAdditions += file.additions
+          excludedDeletions += file.deletions
+        }
+      }
+      commit.additions = detail.additions
+      commit.deletions = detail.deletions
+      commit.excludedAdditions = excludedAdditions
+      commit.excludedDeletions = excludedDeletions
     }
   }
 

@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import type { RepoStats, OrgStats, GrandTotals, FetchProgress, RateLimitInfo, CachedResults, MonthlyData, DayData, SummaryStats, LanguageStat, CommitInfo, AIInvolvementStats, ChurnStats, CommitPatterns, ContributionDay, UserProfile, RepoMetadata, ContributionTypes, PRInfo, PRStats, IssueInfo, IssueStats, StarredRepo, StarredStats, ActivityEvent, TimePatterns, ConventionalCommitBreakdown, CollaborationStats, KeywordStats, GapAnalysis, RepoMetadataStats } from './types'
-import { getContributorStats, getAllRepos, getUser, getUserProfile, getRateLimitInfo, getRepoLanguages, getRepoCommits, getContributionCalendar, getContributionTypes, getUserPRs, getUserIssues, getStarredRepos, getUserEvents, getPublicUserReposWithMeta, computeCommitQuality, GitHubApiError } from './lib/github'
+import type { RepoStats, OrgStats, GrandTotals, FetchProgress, RateLimitInfo, CachedResults, MonthlyData, DayData, SummaryStats, LanguageStat, CommitInfo, AIInvolvementStats, ChurnStats, CommitPatterns, ContributionDay, UserProfile, RepoMetadata, ContributionTypes, PRInfo, PRStats, IssueInfo, IssueStats, TimePatterns, ConventionalCommitBreakdown, CollaborationStats, KeywordStats, GapAnalysis } from './types'
+import { getContributorStats, getAllRepos, getUser, getUserProfile, getRateLimitInfo, getRepoLanguages, getRepoCommits, getContributionCalendar, getContributionTypes, getUserPRs, getUserIssues, getPublicUserReposWithMeta, computeCommitQuality, GitHubApiError } from './lib/github'
 import { requestDeviceCode, pollForToken, getStoredToken, storeToken, clearToken } from './lib/oauth'
-import { computeMonthlyData, computeDailyData, computeDailyDataFromCalendar, computeSummaryStats, computeLanguageStats, computeAIInvolvement, computeChurnStats, computeCommitPatterns, computeTimePatterns, computeConventionalBreakdown, computeCollaboration, computeKeywordStats, computeGapAnalysis, computePRStats, computeIssueStats, computeStarredStats, computeRepoMetadataStats } from './lib/analytics'
+import { computeMonthlyData, computeDailyData, computeDailyDataFromCalendar, computeSummaryStats, computeLanguageStats, computeAIInvolvement, computeChurnStats, computeCommitPatterns, computeTimePatterns, computeConventionalBreakdown, computeCollaboration, computeKeywordStats, computeGapAnalysis, computePRStats, computeIssueStats } from './lib/analytics'
 import { Heatmap } from './components/Heatmap'
 import { MonthlyChart } from './components/MonthlyChart'
 import { SummaryStatsCard } from './components/SummaryStats'
@@ -18,12 +18,24 @@ import { CollaborationPanel } from './components/CollaborationPanel'
 import { KeywordCloud } from './components/KeywordCloud'
 import { PRPanel } from './components/PRPanel'
 import { IssuePanel } from './components/IssuePanel'
-import { StarredPanel } from './components/StarredPanel'
 import { GapAnalysisPanel } from './components/GapAnalysisPanel'
+import { TimePeriodSelector } from './components/TimePeriodSelector'
+import { ExclusionEditor } from './components/ExclusionEditor'
+import {
+  loadFilters,
+  saveFilters,
+  filterRepoStatsByPeriod,
+  filterCommitsByPeriod,
+  filterPRsByPeriod,
+  filterIssuesByPeriod,
+  filterContributionDays,
+  applyExclusionsToRepoStats,
+  type FilterSettings,
+} from './lib/filters'
 import './App.css'
 
 type AppState = 'idle' | 'auth' | 'fetching' | 'done' | 'error'
-type Tab = 'overview' | 'activity' | 'churn' | 'ai' | 'patterns' | 'prs' | 'issues' | 'repos' | 'taste'
+type Tab = 'overview' | 'activity' | 'churn' | 'ai' | 'patterns' | 'prs' | 'issues' | 'repos'
 
 function formatNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -36,6 +48,14 @@ function timeUntilReset(reset: number): string {
   if (seconds <= 0) return 'now'
   const mins = Math.ceil(seconds / 60)
   return `${mins}m`
+}
+
+function formatLastRefresh(ts: number): string {
+  const diff = Math.floor((Date.now() - ts) / 1000)
+  if (diff < 60) return 'just now'
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
 }
 
 const CACHE_KEY = 'gitstat_cache'
@@ -66,7 +86,6 @@ export default function App() {
   const [deviceCode, setDeviceCode] = useState<{ userCode: string; uri: string } | null>(null)
   const [progress, setProgress] = useState<FetchProgress | null>(null)
   const [repoStats, setRepoStats] = useState<RepoStats[]>([])
-  const [orgStats, setOrgStats] = useState<OrgStats[]>([])
   const [totals, setTotals] = useState<GrandTotals | null>(null)
   const [error, setError] = useState<string>('')
   const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null)
@@ -82,10 +101,49 @@ export default function App() {
   const [contribTypes, setContribTypes] = useState<ContributionTypes | null>(null)
   const [prs, setPRs] = useState<PRInfo[]>([])
   const [issues, setIssues] = useState<IssueInfo[]>([])
-  const [starred, setStarred] = useState<StarredRepo[]>([])
-  const [events, setEvents] = useState<ActivityEvent[]>([])
   const [fetchingExtra, setFetchingExtra] = useState(false)
+  const [lastRefreshAt, setLastRefreshAt] = useState<number | null>(null)
+  const [filters, setFilters] = useState<FilterSettings>(loadFilters)
   const cancelRef = useRef(false)
+  const prevExclusionsRef = useRef<string[]>(filters.exclusions)
+
+  useEffect(() => {
+    saveFilters(filters)
+  }, [filters])
+
+  // Refetch sampled commits when file exclusions change so the dashboard
+  // reflects the new filters without a full reload.
+  useEffect(() => {
+    if (state !== 'done' || !username.trim() || repoStats.length === 0) return
+    if (JSON.stringify(prevExclusionsRef.current) === JSON.stringify(filters.exclusions)) return
+    prevExclusionsRef.current = filters.exclusions
+
+    const refetch = async () => {
+      setFetchingCommits(true)
+      try {
+        const reposForCommits = [...repoStats].sort((a, b) => b.commits - a.commits).slice(0, 50)
+        const allCommits: CommitInfo[] = []
+        const batchSize = 10
+        for (let i = 0; i < reposForCommits.length; i += batchSize) {
+          if (cancelRef.current) break
+          const batch = reposForCommits.slice(i, i + batchSize)
+          const batchCommits = await Promise.all(
+            batch.map((r) =>
+              getRepoCommits(r.repo, username.trim(), token || undefined, {
+                maxCommits: 100,
+                exclusions: filters.exclusions,
+              }),
+            ),
+          )
+          for (const cs of batchCommits) allCommits.push(...cs)
+          setCommits([...allCommits])
+        }
+      } finally {
+        setFetchingCommits(false)
+      }
+    }
+    refetch()
+  }, [state, username, repoStats, token, filters.exclusions])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,67 +153,118 @@ export default function App() {
     return () => clearInterval(interval)
   }, [])
 
-  const monthlyData: MonthlyData[] = useMemo(() => computeMonthlyData(repoStats), [repoStats])
+  const exclusionAdjustedRepoStats = useMemo(
+    () => applyExclusionsToRepoStats(repoStats, commits),
+    [repoStats, commits],
+  )
+  const filteredRepoStats = useMemo(
+    () => filterRepoStatsByPeriod(exclusionAdjustedRepoStats, filters.period),
+    [exclusionAdjustedRepoStats, filters.period],
+  )
+  const filteredCommits = useMemo(
+    () => filterCommitsByPeriod(commits, filters.period),
+    [commits, filters.period],
+  )
+  const filteredContributionDays = useMemo(
+    () => filterContributionDays(contributionDays, filters.period),
+    [contributionDays, filters.period],
+  )
+  const filteredPRs = useMemo(
+    () => filterPRsByPeriod(prs, filters.period),
+    [prs, filters.period],
+  )
+  const filteredIssues = useMemo(
+    () => filterIssuesByPeriod(issues, filters.period),
+    [issues, filters.period],
+  )
+
+  const monthlyData: MonthlyData[] = useMemo(
+    () => computeMonthlyData(filteredRepoStats),
+    [filteredRepoStats],
+  )
   const dailyData: Map<string, DayData> = useMemo(
-    () => contributionDays.length > 0
-      ? computeDailyDataFromCalendar(contributionDays)
-      : computeDailyData(repoStats),
-    [repoStats, contributionDays],
+    () => filteredContributionDays.length > 0
+      ? computeDailyDataFromCalendar(filteredContributionDays)
+      : computeDailyData(filteredRepoStats),
+    [filteredRepoStats, filteredContributionDays],
   )
   const summaryStats: SummaryStats = useMemo(
-    () => computeSummaryStats(repoStats, monthlyData, dailyData),
-    [repoStats, monthlyData, dailyData],
+    () => computeSummaryStats(filteredRepoStats, monthlyData, dailyData),
+    [filteredRepoStats, monthlyData, dailyData],
   )
-  const languageStats: LanguageStat[] = useMemo(() => computeLanguageStats(repoStats), [repoStats])
-  const churnStats: ChurnStats = useMemo(() => computeChurnStats(repoStats), [repoStats])
+  const languageStats: LanguageStat[] = useMemo(
+    () => computeLanguageStats(filteredRepoStats),
+    [filteredRepoStats],
+  )
+  const churnStats: ChurnStats = useMemo(
+    () => computeChurnStats(filteredRepoStats),
+    [filteredRepoStats],
+  )
   const commitQuality = useMemo(
-    () => commits.length > 0 ? computeCommitQuality(commits) : undefined,
-    [commits],
+    () => filteredCommits.length > 0 ? computeCommitQuality(filteredCommits) : undefined,
+    [filteredCommits],
   )
   const commitPatterns: CommitPatterns = useMemo(
-    () => computeCommitPatterns(repoStats, commitQuality),
-    [repoStats, commitQuality],
+    () => computeCommitPatterns(filteredRepoStats, commitQuality),
+    [filteredRepoStats, commitQuality],
   )
   const aiStats: AIInvolvementStats | null = useMemo(
-    () => commits.length > 0 ? computeAIInvolvement(commits) : null,
-    [commits],
+    () => filteredCommits.length > 0 ? computeAIInvolvement(filteredCommits) : null,
+    [filteredCommits],
   )
   const timePatterns: TimePatterns | null = useMemo(
-    () => commits.length > 0 ? computeTimePatterns(commits) : null,
-    [commits],
+    () => filteredCommits.length > 0 ? computeTimePatterns(filteredCommits) : null,
+    [filteredCommits],
   )
   const conventionalBreakdown: ConventionalCommitBreakdown | null = useMemo(
-    () => commits.length > 0 ? computeConventionalBreakdown(commits) : null,
-    [commits],
+    () => filteredCommits.length > 0 ? computeConventionalBreakdown(filteredCommits) : null,
+    [filteredCommits],
   )
   const collaborationStats: CollaborationStats | null = useMemo(
-    () => commits.length > 0 ? computeCollaboration(commits) : null,
-    [commits],
+    () => filteredCommits.length > 0 ? computeCollaboration(filteredCommits) : null,
+    [filteredCommits],
   )
   const keywordStats: KeywordStats | null = useMemo(
-    () => commits.length > 0 ? computeKeywordStats(commits) : null,
-    [commits],
+    () => filteredCommits.length > 0 ? computeKeywordStats(filteredCommits) : null,
+    [filteredCommits],
   )
   const gapAnalysis: GapAnalysis | null = useMemo(
     () => computeGapAnalysis(dailyData),
     [dailyData],
   )
   const prStats: PRStats | null = useMemo(
-    () => prs.length > 0 ? computePRStats(prs) : null,
-    [prs],
+    () => filteredPRs.length > 0 ? computePRStats(filteredPRs) : null,
+    [filteredPRs],
   )
   const issueStats: IssueStats | null = useMemo(
-    () => issues.length > 0 ? computeIssueStats(issues) : null,
-    [issues],
+    () => filteredIssues.length > 0 ? computeIssueStats(filteredIssues) : null,
+    [filteredIssues],
   )
-  const starredStats: StarredStats | null = useMemo(
-    () => starred.length > 0 ? computeStarredStats(starred) : null,
-    [starred],
+  const filteredTotals: GrandTotals = useMemo(
+    () => ({
+      repos: filteredRepoStats.length,
+      commits: filteredRepoStats.reduce((s, r) => s + r.commits, 0),
+      additions: filteredRepoStats.reduce((s, r) => s + r.additions, 0),
+      deletions: filteredRepoStats.reduce((s, r) => s + r.deletions, 0),
+      net: filteredRepoStats.reduce((s, r) => s + r.additions - r.deletions, 0),
+    }),
+    [filteredRepoStats],
   )
-  const repoMetaStats: RepoMetadataStats | null = useMemo(
-    () => repoMeta.length > 0 ? computeRepoMetadataStats(repoMeta) : null,
-    [repoMeta],
-  )
+  const filteredOrgStats: OrgStats[] = useMemo(() => {
+    const orgMap: Record<string, OrgStats> = {}
+    for (const r of filteredRepoStats) {
+      const org = r.repo.split('/')[0]
+      if (!orgMap[org]) {
+        orgMap[org] = { org, repos: 0, commits: 0, additions: 0, deletions: 0, net: 0 }
+      }
+      orgMap[org].repos++
+      orgMap[org].commits += r.commits
+      orgMap[org].additions += r.additions
+      orgMap[org].deletions += r.deletions
+      orgMap[org].net += r.additions - r.deletions
+    }
+    return Object.values(orgMap).sort((a, b) => b.commits - a.commits)
+  }, [filteredRepoStats])
   const repoMetaMap = useMemo(() => {
     const m = new Map<string, RepoMetadata>()
     for (const r of repoMeta) m.set(r.fullName, r)
@@ -198,9 +307,9 @@ export default function App() {
       const cached = loadCache(username.trim())
       if (cached) {
         setRepoStats(cached.repoStats)
-        setOrgStats(cached.orgStats)
         setTotals(cached.totals)
         setFromCache(true)
+        setLastRefreshAt(cached.fetchedAt)
         setState('done')
         return
       }
@@ -250,19 +359,6 @@ export default function App() {
 
       // If cancelled, show partial results
       if (cancelRef.current) {
-        const partialOrgMap: Record<string, OrgStats> = {}
-        for (const r of results) {
-          const org = r.repo.split('/')[0]
-          if (!partialOrgMap[org]) {
-            partialOrgMap[org] = { org, repos: 0, commits: 0, additions: 0, deletions: 0, net: 0 }
-          }
-          partialOrgMap[org].repos++
-          partialOrgMap[org].commits += r.commits
-          partialOrgMap[org].additions += r.additions
-          partialOrgMap[org].deletions += r.deletions
-          partialOrgMap[org].net += r.additions - r.deletions
-        }
-        const partialOrgs = Object.values(partialOrgMap).sort((a, b) => b.commits - a.commits)
         const partialTotals: GrandTotals = {
           repos: results.length,
           commits: results.reduce((s, r) => s + r.commits, 0),
@@ -270,26 +366,11 @@ export default function App() {
           deletions: results.reduce((s, r) => s + r.deletions, 0),
           net: results.reduce((s, r) => s + r.additions - r.deletions, 0),
         }
-        setOrgStats(partialOrgs)
         setTotals(partialTotals)
         setProgress(null)
         setState('done')
         return
       }
-
-      const orgMap: Record<string, OrgStats> = {}
-      for (const r of results) {
-        const org = r.repo.split('/')[0]
-        if (!orgMap[org]) {
-          orgMap[org] = { org, repos: 0, commits: 0, additions: 0, deletions: 0, net: 0 }
-        }
-        orgMap[org].repos++
-        orgMap[org].commits += r.commits
-        orgMap[org].additions += r.additions
-        orgMap[org].deletions += r.deletions
-        orgMap[org].net += r.additions - r.deletions
-      }
-      const orgsArr = Object.values(orgMap).sort((a, b) => b.commits - a.commits)
 
       const grandTotals: GrandTotals = {
         repos: results.length,
@@ -300,15 +381,15 @@ export default function App() {
       }
 
       setRepoStats([...results].sort((a, b) => b.commits - a.commits))
-      setOrgStats(orgsArr)
       setTotals(grandTotals)
       setProgress(null)
+      setLastRefreshAt(Date.now())
 
       saveCache({
         username: username.trim(),
         fetchedAt: Date.now(),
         repoStats: results,
-        orgStats: orgsArr,
+        orgStats: [],
         totals: grandTotals,
       })
 
@@ -330,7 +411,7 @@ export default function App() {
           username: username.trim(),
           fetchedAt: Date.now(),
           repoStats: reposWithLangs,
-          orgStats: orgsArr,
+          orgStats: [],
           totals: grandTotals,
         })
       }
@@ -345,7 +426,12 @@ export default function App() {
         if (cancelRef.current) break
         const batch = reposForCommits.slice(i, i + batchSize)
         const batchCommits = await Promise.all(
-          batch.map((r) => getRepoCommits(r.repo, username.trim(), token || undefined, 100)),
+          batch.map((r) =>
+            getRepoCommits(r.repo, username.trim(), token || undefined, {
+              maxCommits: 100,
+              exclusions: filters.exclusions,
+            }),
+          ),
         )
         for (const cs of batchCommits) {
           allCommits.push(...cs)
@@ -363,8 +449,8 @@ export default function App() {
           .catch(() => { /* non-fatal — falls back to weekly approximation */ })
       }
 
-      // Fetch extended data in background: profile, PRs, issues, starred repos,
-      // contribution types, repo metadata, events. All non-fatal.
+      // Fetch extended data in background: profile, PRs, issues,
+      // contribution types, repo metadata. All non-fatal.
       if (!cancelRef.current) {
         setFetchingExtra(true)
         const u = username.trim()
@@ -374,8 +460,6 @@ export default function App() {
           getContributionTypes(u, t, 3).then(setContribTypes),
           getUserPRs(u, t, 100).then(setPRs),
           getUserIssues(u, t, 100).then(setIssues),
-          getStarredRepos(u, t, 100).then(setStarred),
-          getUserEvents(u, t, 30).then(setEvents),
           getPublicUserReposWithMeta(u, t).then(setRepoMeta),
         ]).then(() => setFetchingExtra(false))
       }
@@ -388,7 +472,7 @@ export default function App() {
       setFetchingCommits(false)
       setFetchingExtra(false)
     }
-  }, [username, token])
+  }, [username, token, filters])
 
   const handleSort = (col: typeof sortBy) => {
     if (sortBy === col) {
@@ -415,6 +499,11 @@ export default function App() {
             gitstat
           </h1>
           <div className="flex items-center gap-4">
+            {lastRefreshAt && (
+              <span className="text-[10px] text-zinc-400 tabular-nums" title={new Date(lastRefreshAt).toLocaleString()}>
+                Refreshed {formatLastRefresh(lastRefreshAt)}
+              </span>
+            )}
             {rateLimit && (
               <span
                 className={`text-[10px] font-mono tabular-nums ${
@@ -542,6 +631,12 @@ export default function App() {
               </div>
             )}
 
+            {/* Filters */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <TimePeriodSelector filters={filters} onChange={setFilters} />
+              <ExclusionEditor filters={filters} onChange={setFilters} />
+            </div>
+
             {/* Tabs */}
             <div className="flex gap-4 border-b border-zinc-800 overflow-x-auto" role="tablist" aria-label="Stats views">
               <TabButton id="tab-overview" active={tab === 'overview'} onClick={() => setTab('overview')}>Overview</TabButton>
@@ -552,7 +647,6 @@ export default function App() {
               <TabButton id="tab-prs" active={tab === 'prs'} onClick={() => setTab('prs')}>PRs</TabButton>
               <TabButton id="tab-issues" active={tab === 'issues'} onClick={() => setTab('issues')}>Issues</TabButton>
               <TabButton id="tab-repos" active={tab === 'repos'} onClick={() => setTab('repos')}>Repos</TabButton>
-              <TabButton id="tab-taste" active={tab === 'taste'} onClick={() => setTab('taste')}>Taste</TabButton>
             </div>
 
             {/* Overview */}
@@ -562,14 +656,14 @@ export default function App() {
 
                 {/* Inline figures — not cards */}
                 <div className="flex flex-wrap gap-x-8 gap-y-3 py-2">
-                  <Figure label="Repos" value={totals.repos} />
-                  <Figure label="Commits" value={totals.commits} />
-                  <Figure label="Added" value={totals.additions} color="text-emerald-400" />
-                  <Figure label="Deleted" value={totals.deletions} color="text-rose-400" />
+                  <Figure label="Repos" value={filteredTotals.repos} />
+                  <Figure label="Commits" value={filteredTotals.commits} />
+                  <Figure label="Added" value={filteredTotals.additions} color="text-emerald-400" />
+                  <Figure label="Deleted" value={filteredTotals.deletions} color="text-rose-400" />
                   <Figure
                     label="Net"
-                    value={totals.net}
-                    color={totals.net >= 0 ? 'text-emerald-400' : 'text-rose-400'}
+                    value={filteredTotals.net}
+                    color={filteredTotals.net >= 0 ? 'text-emerald-400' : 'text-rose-400'}
                     signed
                   />
                 </div>
@@ -577,7 +671,7 @@ export default function App() {
                 {contribTypes && <ContributionTypeChart types={contribTypes} />}
 
                 {/* Per-org table */}
-                {orgStats.length > 0 && (
+                {filteredOrgStats.length > 0 && (
                   <div>
                     <h2 className="text-sm font-medium text-zinc-300 mb-2">By organization</h2>
                     <div className="overflow-x-auto">
@@ -593,7 +687,7 @@ export default function App() {
                           </tr>
                         </thead>
                         <tbody>
-                          {orgStats.map((o) => (
+                          {filteredOrgStats.map((o) => (
                             <tr key={o.org} className="border-b border-zinc-900 hover:bg-zinc-900/40 transition-colors">
                               <td className="py-1.5 pr-4 text-blue-400">
                                 <a href={`https://github.com/${o.org}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
@@ -765,18 +859,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Taste */}
-            {tab === 'taste' && (
-              <div role="tabpanel" id="tab-panel" aria-labelledby="tab-taste">
-                {starredStats ? (
-                  <StarredPanel stats={starredStats} repoMetaStats={repoMetaStats} events={events} loading={fetchingExtra} />
-                ) : (
-                  <p className="text-xs text-zinc-500">
-                    {fetchingExtra ? 'Fetching starred repos…' : 'No starred repo data available.'}
-                  </p>
-                )}
-              </div>
-            )}
+
           </div>
         )}
 
@@ -838,11 +921,12 @@ function TabButton({ id, active, onClick, children }: { id: string; active: bool
       onKeyDown={(e) => {
         if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
           e.preventDefault()
-          const tabs = ['tab-overview', 'tab-activity', 'tab-churn', 'tab-ai', 'tab-patterns', 'tab-prs', 'tab-issues', 'tab-repos', 'tab-taste']
+          const tabs = ['tab-overview', 'tab-activity', 'tab-churn', 'tab-ai', 'tab-patterns', 'tab-prs', 'tab-issues', 'tab-repos']
           const idx = tabs.indexOf(id)
           const next = e.key === 'ArrowRight' ? (idx + 1) % tabs.length : (idx - 1 + tabs.length) % tabs.length
-          document.getElementById(tabs[next])?.click()
-          document.getElementById(tabs[next])?.focus()
+          const el = document.getElementById(tabs[next])
+          el?.click()
+          el?.focus()
         }
       }}
       className={`px-1 pb-2 text-sm font-medium border-b-2 transition-colors -mb-px ${

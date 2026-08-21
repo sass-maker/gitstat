@@ -75,20 +75,17 @@ export function AIPanel({ stats, loading }: { stats: AIInvolvementStats | null; 
           <div className="flex items-end gap-1.5 h-28">
             {recentTimeline.map((m) => {
               const totalHeight = (m.total / maxMonthly) * 100
-              const aiHeight = m.total > 0 ? (m.aiAssisted / m.total) * totalHeight : 0
+              const aiRatio = m.total > 0 ? (m.aiAssisted / m.total) * 100 : 0
               return (
                 <div key={m.month} className="flex-1 flex flex-col items-center gap-1.5 group relative">
                   <div className="text-[10px] font-mono text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5 whitespace-nowrap tabular-nums">
                     {m.aiAssisted}/{m.total}
                   </div>
-                  <div className="w-full relative flex items-end h-full" style={{ height: `${totalHeight}%` }}>
-                    <div
-                      className="w-full bg-zinc-700 rounded-t-[2px] absolute bottom-0"
-                      style={{ height: `${totalHeight}%` }}
-                    />
+                  <div className="w-full relative h-full flex items-end justify-center" style={{ height: `${Math.max(totalHeight, 1)}%` }}>
+                    <div className="w-full bg-zinc-700 rounded-t-[2px] absolute bottom-0 h-full" />
                     <div
                       className="w-full bg-blue-500 rounded-t-[2px] absolute bottom-0"
-                      style={{ height: `${aiHeight}%` }}
+                      style={{ height: `${Math.max(aiRatio, 0)}%` }}
                     />
                   </div>
                   <span className="text-[10px] text-zinc-500 truncate w-full text-center">{m.label.split(' ')[0]}</span>

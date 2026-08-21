@@ -100,6 +100,10 @@ export interface CommitInfo {
   authorLogin: string | null
   authorName: string
   authorEmail: string
+  additions?: number
+  deletions?: number
+  excludedAdditions?: number
+  excludedDeletions?: number
 }
 
 export type AITool = 'Devin' | 'Claude' | 'GitHub Copilot' | 'Cursor' | 'ChatGPT' | 'Gemini' | 'Codeium' | 'Windsurf' | 'Aider' | 'Codex' | 'Unknown Bot'

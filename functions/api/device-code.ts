@@ -1,8 +1,8 @@
 // Proxy for GitHub OAuth device code request
-// github.com/login/oauth/device/code does not support CORS
+// github.com/login/device/code does not support CORS
 export const onRequestPost: PagesFunction = async ({ request }) => {
   const body = await request.json()
-  const resp = await fetch('https://github.com/login/oauth/device/code', {
+  const resp = await fetch('https://github.com/login/device/code', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -10,8 +10,8 @@ export const onRequestPost: PagesFunction = async ({ request }) => {
     },
     body: JSON.stringify(body),
   })
-  const data = await resp.json()
-  return new Response(JSON.stringify(data), {
+  const text = await resp.text()
+  return new Response(text, {
     status: resp.status,
     headers: { 'Content-Type': 'application/json' },
   })

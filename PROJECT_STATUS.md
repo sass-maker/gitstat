@@ -17,6 +17,7 @@ A GitHub analytics dashboard that shows a developer's full commit footprint acro
 - 2026-08: Initial build — stats, heatmap, languages, churn, AI detection, patterns
 - 2026-08: Two-tier access (public proxy + OAuth), GraphQL contribution calendar, commit quality
 - 2026-08: Full data coverage — PRs, issues, starred repos, repo metadata, time patterns, collaboration, keywords, gap analysis
+- 2026-08: Time-period filters (7D / 30D / 1Y / All), file/line-type exclusions, last-refresh timestamp, Taste tab removed
 
 ## Products
 
@@ -32,8 +33,6 @@ A GitHub analytics dashboard that shows a developer's full commit footprint acro
 - GraphQL contribution types: commits/PRs/issues/reviews/repos breakdown
 - GraphQL PRs: state, merge time, size, changed files (100 most recent)
 - GraphQL issues: state, resolution time, labels (100 most recent)
-- Starred repos: language + stars (100 most recent)
-- Activity events: recent event feed (30 events)
 - Repo metadata: stars, forks, license, archived, language, description
 - Languages: per-repo byte counts
 - Retry/backoff: exponential with jitter, honors rate-limit headers, error classification
@@ -58,10 +57,12 @@ A GitHub analytics dashboard that shows a developer's full commit footprint acro
 - Gap analysis: longest inactive period, top 5 gaps, total inactive days
 - PR stats: merge rate, avg/median merge time, size distribution, monthly timeline, top repos
 - Issue stats: close rate, avg/median resolution time, top labels, monthly timeline, top repos
-- Starred stats: language distribution, top starred repos
 - Repo metadata stats: total stars, forks, avg stars, fork ratio, archived, license distribution
+- Time-period filtering: 7D / 30D / 1Y / All presets applied to all charts and totals
+- File/line-type exclusions: glob-pattern exclusions (e.g. `package-lock.json`, `*.lock`) for generated files, subtracted from line-change metrics
+- Last-refresh timestamp shown in the header
 
-### UI (9 tabs)
+### UI (8 tabs)
 - **Overview**: profile card, grand totals, contribution type chart, per-org table
 - **Activity**: heatmap, monthly chart, summary stats, language breakdown, gap analysis
 - **Churn**: gross/net chart, volatility, trend, top churn repos
@@ -70,4 +71,3 @@ A GitHub analytics dashboard that shows a developer's full commit footprint acro
 - **PRs**: totals, merge rate, merge time, size distribution, timeline, top repos, recent PRs
 - **Issues**: totals, close rate, resolution time, top labels, timeline, top repos, recent issues
 - **Repos**: sortable table with stars, forks, language
-- **Taste**: starred repos, language distribution, repo metadata stats, top topics, licenses, recent activity
