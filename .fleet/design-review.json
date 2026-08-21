@@ -1,0 +1,67 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "gitstat",
+  "target": "gitstat dashboard — commit stats explorer UI",
+  "mode": "overhaul",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [
+      "developer commit portfolio dashboard — repos as holdings, commits/lines as performance metrics, orgs as sectors, languages as asset classes",
+      "GitHub contribution heatmap — familiar 52-week grid pattern, blue intensity scale for dark mode",
+      "operational data table — dense tabular data with hairline borders, right-aligned numbers, semantic color for additions/deletions"
+    ],
+    "probes": [
+      { "id": "portfolio-dashboard", "path": "artifacts/design/after-1440.png" },
+      { "id": "github-heatmap", "path": "artifacts/design/after-768.png" },
+      { "id": "data-table", "path": "artifacts/design/after-390.png" }
+    ],
+    "selected": "portfolio-dashboard",
+    "approval": "delegated",
+    "before": ""
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "artifacts/design/after-390.png"
+      },
+      {
+        "width": 768,
+        "path": "artifacts/design/after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": "artifacts/design/after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "npm run build",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 34,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "Design direction delegated to agent during build; owner reviewed final screenshots and critique results."
+  }
+}
