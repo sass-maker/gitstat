@@ -509,10 +509,10 @@ export default function App() {
                 className={`text-[10px] font-mono tabular-nums ${
                   rateLimit.remaining < rateLimit.limit * 0.2 ? 'text-amber-400' : 'text-zinc-400'
                 }`}
-                title={rateLimit.remaining < rateLimit.limit * 0.2 ? 'Rate limit low — fetch may fail' : undefined}
+                title={`GitHub API requests remaining: ${rateLimit.remaining.toLocaleString()} of ${rateLimit.limit.toLocaleString()}. Resets in ${timeUntilReset(rateLimit.reset)}.`}
               >
-                {rateLimit.remaining}/{rateLimit.limit}
-                {rateLimit.remaining < rateLimit.limit && ` · ${timeUntilReset(rateLimit.reset)}`}
+                API {rateLimit.remaining.toLocaleString()} / {rateLimit.limit.toLocaleString()} left
+                {rateLimit.remaining < rateLimit.limit && ` · resets ${timeUntilReset(rateLimit.reset)}`}
               </span>
             )}
             {token ? (
