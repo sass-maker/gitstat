@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { RepoStats, OrgStats, GrandTotals, FetchProgress, RateLimitInfo, CachedResults, MonthlyData, DayData, SummaryStats, LanguageStat, CommitInfo, AIInvolvementStats, ChurnStats, CommitPatterns, ContributionDay, UserProfile, RepoMetadata, ContributionTypes, PRInfo, PRStats, IssueInfo, IssueStats, TimePatterns, ConventionalCommitBreakdown, CollaborationStats, KeywordStats, GapAnalysis } from './types'
 import { getContributorStats, getAllRepos, getUser, getUserProfile, getRateLimitInfo, getRepoLanguages, getRepoCommits, getContributionCalendar, getContributionTypes, getUserPRs, getUserIssues, getPublicUserReposWithMeta, computeCommitQuality, GitHubApiError } from './lib/github'
-import { requestDeviceCode, pollForToken, getStoredToken, storeToken, clearToken } from './lib/oauth'
 import { computeMonthlyData, computeDailyData, computeDailyDataFromCalendar, computeSummaryStats, computeLanguageStats, computeAIInvolvement, computeChurnStats, computeCommitPatterns, computeTimePatterns, computeConventionalBreakdown, computeCollaboration, computeKeywordStats, computeGapAnalysis, computePRStats, computeIssueStats } from './lib/analytics'
 import { Heatmap } from './components/Heatmap'
 import { MonthlyChart } from './components/MonthlyChart'
@@ -34,7 +33,7 @@ import {
 } from './lib/filters'
 import './App.css'
 
-type AppState = 'idle' | 'auth' | 'fetching' | 'done' | 'error'
+type AppState = 'idle' | 'fetching' | 'done' | 'error'
 type Tab = 'overview' | 'activity' | 'churn' | 'ai' | 'patterns' | 'prs' | 'issues' | 'repos'
 
 function formatNum(n: number): string {
@@ -82,8 +81,7 @@ export default function App() {
   const [state, setState] = useState<AppState>('idle')
   const [tab, setTab] = useState<Tab>('overview')
   const [username, setUsername] = useState('')
-  const [token, setToken] = useState<string | null>(getStoredToken())
-  const [deviceCode, setDeviceCode] = useState<{ userCode: string; uri: string } | null>(null)
+  const token: string | null = null
   const [progress, setProgress] = useState<FetchProgress | null>(null)
   const [repoStats, setRepoStats] = useState<RepoStats[]>([])
   const [totals, setTotals] = useState<GrandTotals | null>(null)
@@ -271,32 +269,8 @@ export default function App() {
     return m
   }, [repoMeta])
 
-  const handleAuth = useCallback(async () => {
-    setState('auth')
-    setError('')
-    try {
-      const code = await requestDeviceCode()
-      setDeviceCode({ userCode: code.user_code, uri: code.verification_uri })
-      const tokenResp = await pollForToken(code.device_code, code.interval)
-      storeToken(tokenResp.access_token)
-      setToken(tokenResp.access_token)
-      setDeviceCode(null)
-      setState('idle')
-    } catch (e: any) {
-      setError(e.message || 'Authentication failed')
-      setState('error')
-      setDeviceCode(null)
-    }
-  }, [])
-
   const handleCancel = useCallback(() => {
     cancelRef.current = true
-  }, [])
-
-  const handleLogout = useCallback(() => {
-    clearToken()
-    setToken(null)
-    setState('idle')
   }, [])
 
   const handleFetch = useCallback(async (force = false) => {
@@ -515,26 +489,6 @@ export default function App() {
                 {rateLimit.remaining < rateLimit.limit && ` · resets ${timeUntilReset(rateLimit.reset)}`}
               </span>
             )}
-            {token ? (
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] text-emerald-400">authenticated</span>
-                <button
-                  onClick={handleLogout}
-                  className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
-                >
-                  Disconnect
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleAuth}
-                disabled={state === 'auth'}
-                className="text-xs bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-md transition-colors disabled:opacity-40"
-                title="Connect for private repo access and your own 5,000 req/hr quota"
-              >
-                {state === 'auth' ? 'Waiting…' : 'Connect GitHub'}
-              </button>
-            )}
           </div>
         </div>
       </header>
@@ -558,24 +512,6 @@ export default function App() {
             {state === 'fetching' ? 'Fetching…' : 'Get stats'}
           </button>
         </div>
-
-        {/* Auth device code */}
-        {deviceCode && (
-          <div className="mb-6 bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
-            <p className="text-sm text-zinc-400 mb-2">Open this URL on any device:</p>
-            <a
-              href={deviceCode.uri}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 text-base font-mono"
-            >
-              {deviceCode.uri}
-            </a>
-            <p className="text-sm text-zinc-400 mt-4 mb-2">Enter this code:</p>
-            <p className="text-2xl font-mono font-bold tracking-[0.2em] text-zinc-100">{deviceCode.userCode}</p>
-            <p className="text-[10px] text-zinc-400 mt-4">Waiting for authorization…</p>
-          </div>
-        )}
 
         {/* Error */}
         {error && (
@@ -864,7 +800,7 @@ export default function App() {
         )}
 
         {/* Empty state — teaches the interface */}
-        {state === 'idle' && !deviceCode && (
+        {state === 'idle' && (
           <div className="py-16">
             <div className="text-center mb-8">
               <p className="text-base text-zinc-300 mb-1">Enter any GitHub username to see their commit footprint</p>
