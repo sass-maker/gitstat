@@ -14,6 +14,8 @@ A GitHub analytics dashboard that shows a developer's full commit footprint acro
 
 ## Timeline
 
+- 2026-08: Adopted as an active P2 secondary Fleet product with its live Pages
+  surface and custom domain owned by GitStat
 - 2026-08: Initial build — stats, heatmap, languages, churn, AI detection, patterns
 - 2026-08: Two-tier access (public proxy + OAuth), GraphQL contribution calendar, commit quality
 - 2026-08: Full data coverage — PRs, issues, starred repos, repo metadata, time patterns, collaboration, keywords, gap analysis
@@ -71,3 +73,7 @@ A GitHub analytics dashboard that shows a developer's full commit footprint acro
 - **PRs**: totals, merge rate, merge time, size distribution, timeline, top repos, recent PRs
 - **Issues**: totals, close rate, resolution time, top labels, timeline, top repos, recent issues
 - **Repos**: sortable table with stars, forks, language
+
+## Work queue
+
+[GitHub Issues](https://github.com/sass-maker/gitstat/issues)
