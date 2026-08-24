@@ -6,6 +6,9 @@
 }
 
 body {
+  margin: 0;
+  background: #09090b;
+  color: #f4f4f5;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

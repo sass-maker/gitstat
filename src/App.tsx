@@ -801,17 +801,65 @@ export default function App() {
 
         {/* Empty state — teaches the interface */}
         {state === 'idle' && (
-          <div className="py-16">
-            <div className="text-center mb-8">
-              <p className="text-base text-zinc-300 mb-1">Enter any GitHub username to see their commit footprint</p>
-              <p className="text-sm text-zinc-400">Aggregate commits, lines changed, and analytics across all repos and orgs</p>
+          <section className="grid gap-10 py-10 md:grid-cols-[minmax(0,1fr)_minmax(20rem,.9fr)] md:items-center md:py-16" aria-labelledby="gitstat-intro">
+            <div>
+              <p className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-400">
+                Live dashboard · public repositories
+              </p>
+              <h2 id="gitstat-intro" className="max-w-xl text-3xl font-semibold tracking-[-0.035em] text-zinc-50 sm:text-5xl">
+                See the shape of a GitHub footprint, not just a contribution count.
+              </h2>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">
+                Enter any GitHub username above. GitStat aggregates activity across repositories
+                and organizations, then separates output, churn, pull requests, issues, patterns,
+                and sampled AI-agent involvement.
+              </p>
+              <div className="mt-8 space-y-3">
+                <Step n="1" text="No login required for public repositories" />
+                <Step n="2" text="Time windows and generated-file exclusions stay adjustable" />
+                <Step n="3" text="Every result remains linked back to the underlying repositories" />
+              </div>
             </div>
-            <div className="max-w-md mx-auto space-y-3">
-              <Step n="1" text="Enter any GitHub username — no login required for public repos" />
-              <Step n="2" text="Optionally connect your GitHub account for private repos and your own rate limit" />
-              <Step n="3" text="Get totals, per-org breakdowns, activity heatmap, code churn, AI agent involvement, and commit patterns" />
+
+            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-2xl shadow-black/30" aria-label="Illustrative GitStat dashboard output">
+              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 font-mono text-[10px] text-zinc-500">
+                <span>Illustrative output</span>
+                <span className="text-emerald-400">● ready</span>
+              </div>
+              <div className="grid grid-cols-2 border-b border-zinc-800 sm:grid-cols-4">
+                {[
+                  ['Repos', '42'],
+                  ['Commits', '1.8K'],
+                  ['Added', '+284K'],
+                  ['Deleted', '-91K'],
+                ].map(([label, value]) => (
+                  <div key={label} className="border-b border-zinc-800 p-4 even:border-l sm:border-b-0 sm:border-l sm:first:border-l-0">
+                    <p className="text-[10px] text-zinc-500">{label}</p>
+                    <p className="mt-1 font-mono text-sm text-zinc-200">{value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-4 p-4">
+                <div className="flex items-center justify-between text-[10px] text-zinc-500">
+                  <span>Monthly activity</span>
+                  <span>12 months</span>
+                </div>
+                <div className="flex h-28 items-end gap-2" aria-hidden="true">
+                  {[28, 42, 34, 58, 49, 70, 62, 86, 67, 92, 78, 100].map((height, index) => (
+                    <span
+                      key={`${height}-${index}`}
+                      className="flex-1 rounded-t-sm bg-blue-500/70"
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
+                <p className="text-[10px] leading-5 text-zinc-500">
+                  The dashboard uses live GitHub data after you submit a username. This preview is
+                  illustrative and does not represent a real account.
+                </p>
+              </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* Skeleton loading for activity tab while fetching */}
