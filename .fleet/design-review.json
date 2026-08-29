@@ -2,7 +2,8 @@
   "$schema": "fleet.design-review.v1",
   "version": 1,
   "project": "gitstat",
-  "target": "gitstat dashboard — commit stats explorer UI",
+  "target": "public GitStat landing and dashboard entry state",
+  "surfaceMode": "persuade",
   "mode": "overhaul",
   "register": "product",
   "context": {
@@ -11,18 +12,39 @@
   },
   "direction": {
     "references": [
-      "developer commit portfolio dashboard — repos as holdings, commits/lines as performance metrics, orgs as sectors, languages as asset classes",
-      "GitHub contribution heatmap — familiar 52-week grid pattern, blue intensity scale for dark mode",
-      "operational data table — dense tabular data with hairline borders, right-aligned numbers, semantic color for additions/deletions"
+      "Preline hero form",
+      "GitStat repository ledger"
     ],
-    "probes": [
-      { "id": "portfolio-dashboard", "path": "artifacts/design/after-1440.png" },
-      { "id": "github-heatmap", "path": "artifacts/design/after-768.png" },
-      { "id": "data-table", "path": "artifacts/design/after-390.png" }
-    ],
-    "selected": "portfolio-dashboard",
+    "probes": [],
+    "selected": "repository-ledger-hero",
     "approval": "delegated",
-    "before": ""
+    "before": "artifacts/design/before-1440.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "preline",
+      "sources": [
+        "https://preline.co/examples/hero-forms.html"
+      ],
+      "runtime": "markup-only",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "Explain where engineering effort, contribution history, and code churn are distributed across many repositories.",
+      "purposeSource": "Site Health purposeContract plus PRODUCT.md and current implementation",
+      "canonicalPurpose": "GitStat explains how engineering effort, contribution history, and code churn are distributed across many repositories.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "A developer managing enough GitHub projects that the normal contribution graph no longer answers useful questions.",
+      "job": "Understand the product, enter a public GitHub username, and inspect repository-distribution evidence without mistaking activity for productivity.",
+      "thesis": "An operational public-repository ledger turns the landing itself into a compact preview of the analysis rather than a generic developer-tool pitch.",
+      "system": "Deep zinc ground, restrained blue action and distribution signals, emerald and rose only for change semantics, dense system typography, and hairline ledger borders.",
+      "signature": "The repository-distribution ledger makes concentration, additions, and deletions legible before the first analysis.",
+      "risk": "The restrained dashboard language could feel too quiet, so the oversized outcome-led headline and integrated username action carry the persuasion layer."
+    }
   },
   "evidence": {
     "screenshots": [
@@ -36,19 +58,19 @@
       },
       {
         "width": 1440,
-        "path": "artifacts/design/after-1440.png"
+        "path": "artifacts/design/after-current-desktop.jpg"
       }
     ],
     "projectCheck": {
-      "command": "npm run build",
+      "command": "npm run build && npm run lint",
       "status": "pass"
     },
     "critique": {
-      "score": 34,
+      "score": 37,
       "maximum": 40
     },
     "audit": {
-      "score": 18,
+      "score": 20,
       "maximum": 20
     },
     "unresolved": {
@@ -57,11 +79,52 @@
     },
     "detector": {
       "posture": "advisory",
-      "findings": []
+      "findings": [
+        "The current desktop capture is 1728px; the retained exact-width 390px and 768px captures cover the unchanged dashboard shell, while PSI Swarm independently exercised the rebuilt production landing under mobile emulation.",
+        "The generic SEO auditor asks WebApplication JSON-LD for reviews that do not exist; no aggregateRating or review was fabricated."
+      ]
+    },
+    "comprehension": {
+      "status": "pass",
+      "reviewer": "fresh browser DOM and visual review",
+      "answers": {
+        "product": "GitStat is a public GitHub analytics dashboard for repository-distribution, effort, and code-churn questions.",
+        "audience": "Developers with enough repositories that a normal contribution graph is no longer explanatory.",
+        "value": "It shows where engineering effort and change are concentrated without collapsing them into a productivity score.",
+        "mechanism": "A submitted public username is aggregated across repositories and organizations into separate churn, cadence, collaboration, PR, issue, and sampled AI views.",
+        "proof": "The first viewport shows the repository ledger output shape, and the local Cloudflare journey returned live Octocat profile and repository evidence.",
+        "nextAction": "Enter a GitHub username and select Analyze."
+      },
+      "purposeScore": {
+        "product": 25,
+        "audience": 15,
+        "value": 15,
+        "mechanism": 15,
+        "proof": 15,
+        "nextAction": 15,
+        "total": 100
+      },
+      "mismatches": []
+    },
+    "performance": {
+      "report": ".fleet/evidence/landing-audit/performance.html",
+      "weightedLcpMs": 967,
+      "cls": 0,
+      "tbtMs": 0
+    },
+    "visualQuality": {
+      "priority": "P2",
+      "score": 92,
+      "minimum": 85
+    },
+    "accessibility": {
+      "lighthouseMobile": 100,
+      "contrastFailures": 0,
+      "note": "Raised previously sub-threshold zinc-500 and zinc-600 small text to the verified zinc-400 level across the landing ledger and dashboard states."
     }
   },
   "ownerFeedback": {
     "decision": "delegated",
-    "note": "Design direction delegated to agent during build; owner reviewed final screenshots and critique results."
+    "note": "The owner delegated portfolio landing-page rebuilding and asked that implementation depth follow canonical priority."
   }
 }

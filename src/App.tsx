@@ -469,9 +469,14 @@ export default function App() {
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <header className="border-b border-zinc-800 px-6 py-3">
         <div className="mx-auto max-w-4xl flex items-center justify-between">
-          <h1 className="text-base font-semibold tracking-tight text-zinc-100">
-            gitstat
-          </h1>
+          <div className="flex items-center gap-3">
+            <a href="/" className="text-base font-semibold tracking-tight text-zinc-100" aria-label="GitStat home">
+              gitstat
+            </a>
+            <span className="hidden rounded-full border border-zinc-800 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-400 sm:inline">
+              Public GitHub analytics
+            </span>
+          </div>
           <div className="flex items-center gap-4">
             {lastRefreshAt && (
               <span className="text-[10px] text-zinc-400 tabular-nums" title={new Date(lastRefreshAt).toLocaleString()}>
@@ -489,29 +494,27 @@ export default function App() {
                 {rateLimit.remaining < rateLimit.limit && ` · resets ${timeUntilReset(rateLimit.reset)}`}
               </span>
             )}
+            <a
+              href="https://github.com/sass-maker/gitstat"
+              className="text-xs text-zinc-400 transition-colors hover:text-zinc-100"
+            >
+              Source
+            </a>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-6">
         {/* Input */}
-        <div className="flex gap-2 mb-6">
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleFetch()}
-            placeholder="GitHub username"
-            className="flex-1 bg-zinc-900 border border-zinc-700 rounded-md px-3 py-2 text-sm placeholder-zinc-500 focus:border-blue-500 focus:outline-none transition-colors"
+        {state !== 'idle' && (
+          <UsernameForm
+            username={username}
+            onUsernameChange={setUsername}
+            onSubmit={handleFetch}
+            busy={state === 'fetching'}
+            compact
           />
-          <button
-            onClick={() => handleFetch()}
-            disabled={!username.trim() || state === 'fetching'}
-            className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-5 py-2 rounded-md text-sm font-medium transition-colors"
-          >
-            {state === 'fetching' ? 'Fetching…' : 'Get stats'}
-          </button>
-        </div>
+        )}
 
         {/* Error */}
         {error && (
@@ -678,7 +681,7 @@ export default function App() {
                     {languageStats.length > 0 ? (
                       <LanguageBreakdown languages={languageStats} />
                     ) : (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-zinc-400">
                         {fetchingLangs ? 'Fetching language data…' : 'No language data available.'}
                       </p>
                     )}
@@ -720,7 +723,7 @@ export default function App() {
                 {prStats ? (
                   <PRPanel stats={prStats} loading={fetchingExtra} />
                 ) : (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-400">
                     {fetchingExtra ? 'Fetching PR data…' : 'No PR data available.'}
                   </p>
                 )}
@@ -733,7 +736,7 @@ export default function App() {
                 {issueStats ? (
                   <IssuePanel stats={issueStats} loading={fetchingExtra} />
                 ) : (
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-400">
                     {fetchingExtra ? 'Fetching issue data…' : 'No issue data available.'}
                   </p>
                 )}
@@ -749,7 +752,7 @@ export default function App() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="border-b border-zinc-800 text-zinc-500">
+                      <tr className="border-b border-zinc-800 text-zinc-400">
                         <SortableTh label="Repository" col="repo" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} align="left" />
                         <SortableTh label="Commits" col="commits" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                         <SortableTh label="Added" col="additions" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
@@ -801,65 +804,71 @@ export default function App() {
 
         {/* Empty state — teaches the interface */}
         {state === 'idle' && (
-          <section className="grid gap-10 py-10 md:grid-cols-[minmax(0,1fr)_minmax(20rem,.9fr)] md:items-center md:py-16" aria-labelledby="gitstat-intro">
-            <div>
-              <p className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-400">
-                Live dashboard · public repositories
-              </p>
-              <h2 id="gitstat-intro" className="max-w-xl text-3xl font-semibold tracking-[-0.035em] text-zinc-50 sm:text-5xl">
-                See the shape of a GitHub footprint, not just a contribution count.
-              </h2>
-              <p className="mt-5 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">
-                Enter any GitHub username above. GitStat aggregates activity across repositories
-                and organizations, then separates output, churn, pull requests, issues, patterns,
-                and sampled AI-agent involvement.
-              </p>
-              <div className="mt-8 space-y-3">
-                <Step n="1" text="No login required for public repositories" />
-                <Step n="2" text="Time windows and generated-file exclusions stay adjustable" />
-                <Step n="3" text="Every result remains linked back to the underlying repositories" />
+          <div>
+            <section className="grid gap-10 py-10 md:grid-cols-[minmax(0,1fr)_minmax(20rem,.92fr)] md:items-center md:py-16" aria-labelledby="gitstat-intro">
+              <div>
+                <p className="mb-4 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-400">
+                  Free · no account · public repositories
+                </p>
+                <h1 id="gitstat-intro" className="max-w-xl text-4xl font-semibold tracking-[-0.05em] text-zinc-50 sm:text-6xl sm:leading-[0.96]">
+                  See where your engineering effort is actually going.
+                </h1>
+                <p className="mt-6 max-w-xl text-sm leading-7 text-zinc-400 sm:text-base">
+                  For developers managing more repositories than a contribution graph can explain.
+                  GitStat separates commits, code churn, collaboration, pull requests, issues, and
+                  sampled AI involvement across a public GitHub footprint.
+                </p>
+                <UsernameForm
+                  username={username}
+                  onUsernameChange={setUsername}
+                  onSubmit={handleFetch}
+                  busy={false}
+                />
+                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[10px] text-zinc-400">
+                  <span>Public data only</span>
+                  <span>One-hour device cache</span>
+                  <span>Source-linked evidence</span>
+                </div>
               </div>
-            </div>
 
-            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/70 shadow-2xl shadow-black/30" aria-label="Illustrative GitStat dashboard output">
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 font-mono text-[10px] text-zinc-500">
-                <span>Illustrative output</span>
-                <span className="text-emerald-400">● ready</span>
+              <IllustrativeLedger />
+            </section>
+
+            <section className="border-y border-zinc-800 py-8" aria-labelledby="signals-title">
+              <div className="mb-7 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">One footprint, separate signals</p>
+                  <h2 id="signals-title" className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-zinc-100">Ask a concrete portfolio question.</h2>
+                </div>
+                <p className="max-w-sm text-xs leading-6 text-zinc-400">GitStat keeps unlike measures apart instead of turning activity into a fake productivity score.</p>
               </div>
-              <div className="grid grid-cols-2 border-b border-zinc-800 sm:grid-cols-4">
+              <div className="grid border border-zinc-800 sm:grid-cols-3">
                 {[
-                  ['Repos', '42'],
-                  ['Commits', '1.8K'],
-                  ['Added', '+284K'],
-                  ['Deleted', '-91K'],
-                ].map(([label, value]) => (
-                  <div key={label} className="border-b border-zinc-800 p-4 even:border-l sm:border-b-0 sm:border-l sm:first:border-l-0">
-                    <p className="text-[10px] text-zinc-500">{label}</p>
-                    <p className="mt-1 font-mono text-sm text-zinc-200">{value}</p>
+                  ['01', 'Effort and churn', 'Find where commits, additions, deletions, and net change are concentrated.'],
+                  ['02', 'Cadence and collaboration', 'Inspect sustained work, gaps, pull requests, issues, and contributor patterns.'],
+                  ['03', 'Context, not verdicts', 'Review languages and sampled AI signals with links back to public repositories.'],
+                ].map(([number, title, description]) => (
+                  <div key={number} className="border-b border-zinc-800 p-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+                    <p className="font-mono text-[10px] text-blue-400">{number}</p>
+                    <h3 className="mt-8 text-sm font-semibold text-zinc-100">{title}</h3>
+                    <p className="mt-2 text-xs leading-6 text-zinc-400">{description}</p>
                   </div>
                 ))}
               </div>
-              <div className="space-y-4 p-4">
-                <div className="flex items-center justify-between text-[10px] text-zinc-500">
-                  <span>Monthly activity</span>
-                  <span>12 months</span>
-                </div>
-                <div className="flex h-28 items-end gap-2" aria-hidden="true">
-                  {[28, 42, 34, 58, 49, 70, 62, 86, 67, 92, 78, 100].map((height, index) => (
-                    <span
-                      key={`${height}-${index}`}
-                      className="flex-1 rounded-t-sm bg-blue-500/70"
-                      style={{ height: `${height}%` }}
-                    />
-                  ))}
-                </div>
-                <p className="text-[10px] leading-5 text-zinc-500">
-                  The dashboard uses live GitHub data after you submit a username. This preview is
-                  illustrative and does not represent a real account.
-                </p>
+            </section>
+
+            <section className="grid gap-8 py-10 sm:grid-cols-[.8fr_1.2fr] sm:py-14" aria-labelledby="boundary-title">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-amber-400">Honest boundary</p>
+                <h2 id="boundary-title" className="mt-2 max-w-xs text-2xl font-semibold tracking-[-0.03em] text-zinc-100">Evidence about work, not a score for a person.</h2>
               </div>
-            </div>
-          </section>
+              <div className="grid gap-3 text-sm leading-6 text-zinc-400">
+                <Step n="1" text="The current experience covers public repositories; private-repository OAuth is not exposed." />
+                <Step n="2" text="AI involvement is inferred from sampled public commit metadata, never presented as proof of authorship." />
+                <Step n="3" text="Large accounts may wait for GitHub's shared API allowance; the product shows that limit directly." />
+              </div>
+            </section>
+          </div>
         )}
 
         {/* Skeleton loading for activity tab while fetching */}
@@ -878,6 +887,22 @@ export default function App() {
           </div>
         )}
       </main>
+      <footer className="border-t border-zinc-800 px-6 py-8 text-zinc-400">
+        <div className="mx-auto flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-zinc-100">gitstat</p>
+            <p className="mt-2 max-w-xl text-xs leading-6">
+              Free, public GitHub analytics with no account or paywall. Public responses are
+              processed in your browser, cached on this device for one hour, and never used for
+              product analytics.
+            </p>
+          </div>
+          <nav className="flex shrink-0 gap-4 text-xs" aria-label="GitStat links">
+            <a className="hover:text-zinc-100" href="https://github.com/sass-maker/gitstat">Source</a>
+            <a className="hover:text-zinc-100" href="https://sassmaker.com/p/gitstat">SaaS Maker profile</a>
+          </nav>
+        </div>
+      </footer>
     </div>
   )
 }
@@ -921,6 +946,102 @@ function TabButton({ id, active, onClick, children }: { id: string; active: bool
     >
       {children}
     </button>
+  )
+}
+
+function UsernameForm({
+  username,
+  onUsernameChange,
+  onSubmit,
+  busy,
+  compact = false,
+}: {
+  username: string
+  onUsernameChange: (value: string) => void
+  onSubmit: () => void
+  busy: boolean
+  compact?: boolean
+}) {
+  return (
+    <div className={compact ? 'mb-6 flex gap-2' : 'mt-8 flex gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 p-2 shadow-2xl shadow-black/20'}>
+      <label htmlFor="github-username" className="sr-only">GitHub username</label>
+      <input
+        id="github-username"
+        type="text"
+        value={username}
+        onChange={(event) => onUsernameChange(event.target.value)}
+        onKeyDown={(event) => event.key === 'Enter' && onSubmit()}
+        placeholder="Enter a GitHub username"
+        autoComplete="off"
+        spellCheck={false}
+        className={`min-w-0 flex-1 px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-colors focus:outline-none ${
+          compact
+            ? 'rounded-md border border-zinc-700 bg-zinc-900 focus:border-blue-500'
+            : 'border-0 bg-transparent'
+        }`}
+      />
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={!username.trim() || busy}
+        className="shrink-0 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40 sm:px-5"
+      >
+        {busy ? 'Fetching…' : 'Analyze'}
+      </button>
+    </div>
+  )
+}
+
+function IllustrativeLedger() {
+  const repositories = [
+    ['product-web', '618', '+83K', '-21K', 94],
+    ['desktop-app', '442', '+61K', '-18K', 71],
+    ['agent-tools', '295', '+37K', '-9K', 49],
+  ]
+
+  return (
+    <div className="relative" aria-label="Illustrative GitStat repository ledger">
+      <div className="absolute -inset-8 -z-10 bg-blue-500/5 blur-3xl" aria-hidden="true" />
+      <div className="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900/85 shadow-2xl shadow-black/40">
+        <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 font-mono text-[10px] text-zinc-400">
+          <span>Repository distribution</span>
+          <span className="text-emerald-400">● live analysis</span>
+        </div>
+        <div className="grid grid-cols-3 border-b border-zinc-800">
+          {[
+            ['Repos', '42'],
+            ['Commits', '1.8K'],
+            ['Net change', '+193K'],
+          ].map(([label, value]) => (
+            <div key={label} className="border-r border-zinc-800 p-4 last:border-r-0">
+              <p className="text-[9px] text-zinc-400">{label}</p>
+              <p className="mt-1 font-mono text-sm text-zinc-100">{value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="px-4 py-2">
+          <div className="grid grid-cols-[minmax(0,1fr)_3rem_3rem_3rem] gap-2 border-b border-zinc-800 py-2 font-mono text-[9px] uppercase tracking-[0.08em] text-zinc-400">
+            <span>Repository</span><span className="text-right">Commits</span><span className="text-right">Added</span><span className="text-right">Deleted</span>
+          </div>
+          {repositories.map(([name, commits, additions, deletions, width]) => (
+            <div key={name} className="grid grid-cols-[minmax(0,1fr)_3rem_3rem_3rem] gap-2 border-b border-zinc-800/80 py-3 text-[10px] last:border-b-0">
+              <div className="min-w-0">
+                <span className="block truncate text-zinc-300">{name}</span>
+                <span className="mt-1.5 block h-1 rounded-full bg-zinc-800">
+                  <span className="block h-1 rounded-full bg-blue-500/80" style={{ width: `${width}%` }} />
+                </span>
+              </div>
+              <span className="text-right font-mono text-zinc-400">{commits}</span>
+              <span className="text-right font-mono text-emerald-400">{additions}</span>
+              <span className="text-right font-mono text-rose-400">{deletions}</span>
+            </div>
+          ))}
+        </div>
+        <p className="border-t border-zinc-800 px-4 py-3 text-[9px] leading-5 text-zinc-400">
+          Illustrative output. Submit a username to inspect live public GitHub evidence.
+        </p>
+      </div>
+    </div>
   )
 }
 

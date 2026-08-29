@@ -25,22 +25,22 @@ username.
 
 ## Positioning
 
-The only tool that aggregates commit-level line statistics across all GitHub
-repos and orgs for any username, with analytics depth (streaks, trends,
-languages) that GitHub's own profile does not offer. Free, public, no
-account required beyond GitHub OAuth.
+Cross-repository GitHub analytics with enough depth to separate effort, churn,
+collaboration, pull requests, issues, and sampled AI involvement instead of
+collapsing work into one contribution count. Free, public, and no account
+required for the current public-repository experience.
 
 ## Operating Context
 
-- User enters any GitHub username and authenticates via OAuth device flow.
+- User enters any GitHub username; the current public experience does not expose OAuth.
 - All data fetched client-side from the GitHub API; no server-side storage.
 - Results cached in localStorage for 1 hour.
-- Deployed on Cloudflare Pages with thin Functions proxy for OAuth.
+- Deployed on Cloudflare Pages with a thin Functions proxy for public GitHub requests.
 - Dark, operational, dense UI — scannable tables and charts, not marketing.
 
 ## Capabilities and Constraints
 
-- OAuth device flow authentication (private repos + 5000 req/hr).
+- Public GitHub analysis through a shared proxy allowance; private repositories are not currently exposed.
 - Repo discovery across personal account + all org memberships.
 - Per-repo stats/contributors API with 202 retry handling.
 - Aggregation: grand totals, per-org breakdown, per-repo breakdown.
@@ -50,8 +50,8 @@ account required beyond GitHub OAuth.
 - Sortable per-repo table.
 - localStorage caching with 1hr TTL and manual refresh.
 - Rate limit display with reset countdown.
-- Must remain free and public. No server-side data storage beyond OAuth
-  proxy. No analytics tracking. No accounts.
+- Must remain free and public. The thin GitHub proxy does not store response
+  data. No analytics tracking. No accounts.
 
 ## Brand Commitments
 

@@ -1,0 +1,25 @@
+# GitStat
+
+> GitStat explains how engineering effort, contribution history, and code churn are distributed across a GitHub footprint.
+
+## When to use GitStat
+
+Use GitStat when a developer's normal GitHub profile no longer answers where their work is going. Enter any GitHub username to inspect public repositories, organizations, commits, churn, pull requests, issues, collaboration, time patterns, and sampled AI-agent involvement.
+
+Do not use GitStat as a productivity score, an authorship oracle, or evidence about private repositories. AI involvement is inferred from sampled public commit metadata and is labelled accordingly.
+
+## Current access and data boundary
+
+- Free and public; no account or payment is required.
+- The current public experience does not expose private repositories or an OAuth connection.
+- GitHub responses are processed in the browser and cached on the current device for one hour.
+- There is no product analytics tracking and no GitStat account store.
+- Results link back to the underlying public repositories.
+
+## Surfaces
+
+- [Open GitStat](https://git.significanthobbies.com/)
+- [GitStat as Markdown](https://git.significanthobbies.com/index.md)
+- [Machine-readable product facts](https://git.significanthobbies.com/api/ai)
+- [Pricing and availability](https://git.significanthobbies.com/pricing.md)
+- [Source](https://github.com/sass-maker/gitstat)

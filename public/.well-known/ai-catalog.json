@@ -1,0 +1,15 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "GitStat",
+    "identifier": "did:web:git.significanthobbies.com"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:git.significanthobbies.com:product:facts",
+      "displayName": "GitStat product facts",
+      "type": "application/json",
+      "url": "https://git.significanthobbies.com/api/ai"
+    }
+  ]
+}

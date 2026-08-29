@@ -4,11 +4,61 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>gitstat — GitHub commit stats explorer</title>
-    <meta name="description" content="Aggregate commits and line changes across all GitHub repos and orgs for any username." />
+    <title>GitStat — GitHub effort, churn, and contribution analytics</title>
+    <meta name="description" content="See how engineering effort, code churn, pull requests, issues, collaboration, and sampled AI involvement are distributed across a GitHub footprint." />
+    <link rel="canonical" href="https://git.significanthobbies.com/" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GitStat" />
+    <meta property="og:title" content="GitStat — see the shape of a GitHub footprint" />
+    <meta property="og:description" content="Cross-repository analytics for engineering effort, churn, collaboration, pull requests, issues, and sampled AI involvement." />
+    <meta property="og:url" content="https://git.significanthobbies.com/" />
+    <meta property="og:image" content="https://git.significanthobbies.com/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GitStat — see the shape of a GitHub footprint" />
+    <meta name="twitter:description" content="Free, public cross-repository GitHub analytics with no account required." />
+    <meta name="twitter:image" content="https://git.significanthobbies.com/og-image.svg" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "GitStat",
+        "url": "https://git.significanthobbies.com/",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "isAccessibleForFree": true,
+        "description": "Free, public cross-repository analytics for GitHub effort, code churn, collaboration, pull requests, issues, and sampled AI involvement.",
+        "codeRepository": "https://github.com/sass-maker/gitstat",
+        "author": {
+          "@type": "Person",
+          "name": "Sarthak Agrawal",
+          "url": "https://sarthakagrawal.dev"
+        }
+      }
+    </script>
+    <style>
+      .initial-shell { min-height: 100vh; box-sizing: border-box; padding: 4rem 1.5rem; background: #09090b; color: #f4f4f5; font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .initial-shell > div { max-width: 56rem; margin: 0 auto; }
+      .initial-shell h1 { max-width: 13ch; margin: 1rem 0; font-size: clamp(2.5rem, 8vw, 4.75rem); line-height: .95; letter-spacing: -.045em; }
+      .initial-shell p { max-width: 46rem; color: #a1a1aa; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="initial-shell">
+        <div>
+          <strong>GitStat · free public dashboard</strong>
+          <h1>See where your engineering effort is actually going.</h1>
+          <p>GitStat is for developers managing more repositories than a contribution graph can explain. Enter any GitHub username to inspect how effort, code churn, collaboration, pull requests, issues, and sampled AI involvement are distributed across a public footprint. No account or payment is required.</p>
+          <h2>Analytics that stay separate</h2>
+          <p>GitStat keeps commits, additions, deletions, net change, repository concentration, languages, cadence, collaboration, pull requests, issues, inactivity gaps, and AI signals in distinct views. It does not compress them into a single productivity score, and the dashboard keeps links to the underlying public repositories.</p>
+          <h2>Current access and data boundary</h2>
+          <p>The current product analyzes public GitHub data only; the earlier optional OAuth and private-repository connection is not exposed. GitHub responses are processed in the browser and cached on this device for one hour. GitStat has no user account store, paid tier, checkout, or product analytics tracking. AI involvement is inferred from sampled public commit metadata and is not proof of authorship.</p>
+          <h2>What happens after a username is submitted</h2>
+          <p>The dashboard discovers public personal and organization repositories, reads contribution statistics with retry handling, and progressively fills the analysis views. Time-period filters and generated-file exclusions remain adjustable. Large footprints can take longer or wait for the shared GitHub API allowance to reset; that operational limit is shown instead of being hidden behind an invented premium plan.</p>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
     <script src="https://sassmaker.com/project-strip.js" data-project="gitstat" defer></script>
     <script src="https://sassmaker.com/ai-chat-footer.js" data-name="GitStat" defer></script>

@@ -2,7 +2,7 @@
 
 ## Why / What
 
-A GitHub analytics dashboard that shows a developer's full commit footprint across all repos and orgs — totals, activity patterns, code churn, AI agent involvement, PR/issue activity, and taste signals. Enter any username to get stats; OAuth is optional (private repos + own rate limit).
+A GitHub analytics dashboard that shows a developer's public commit footprint across repos and orgs — totals, activity patterns, code churn, sampled AI agent involvement, and PR/issue activity. Enter any username to get stats; the earlier optional OAuth/private-repository connection is not currently exposed.
 
 ## Dependencies
 
