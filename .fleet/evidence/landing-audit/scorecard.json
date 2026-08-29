@@ -1,0 +1,87 @@
+{
+  "$schema": "fleet.landing-audit.scorecard.v1",
+  "project": "gitstat",
+  "priority": "P2",
+  "candidate": "http://127.0.0.1:4179/",
+  "productionChanged": false,
+  "checkedAt": "2026-08-28",
+  "purpose": {
+    "score": 96,
+    "minimum": 85,
+    "p0": 0,
+    "p1": 0,
+    "note": "The first viewport names the audience, explains the limitation of a normal contribution graph, separates effort, churn, collaboration, pull requests, issues, and sampled AI signals, states the public-data boundary, and provides one immediate username action."
+  },
+  "design": {
+    "score": 92,
+    "minimum": 88,
+    "p0": 0,
+    "p1": 0,
+    "note": "The restrained repository-ledger direction fits a dense analytics tool, shows the output shape before submission, and now maintains readable contrast across small labels without becoming decorative or generic."
+  },
+  "seo": {
+    "score": 99,
+    "passed": 16,
+    "failed": 0,
+    "warnings": 2,
+    "warningsNote": "The valid WebApplication has no genuine review evidence, and localhost is intentionally not the production canonical. No review or rating was invented.",
+    "linkGraph": {
+      "sitemapPages": 1,
+      "crawledPages": 1,
+      "errors": 0,
+      "redirects": 0,
+      "orphanCandidates": 0
+    }
+  },
+  "geo": {
+    "score": 100,
+    "candidateTier": "S",
+    "productionTier": "C",
+    "productionScore": 11,
+    "note": "The local Cloudflare Pages candidate returns correctly typed llms.txt, /api/ai, index.md, robots.txt, sitemap.xml, JSON-LD, a one-page Markdown route, and an origin-adaptive catalog. Current production still serves the old SPA shell for those paths and remains unchanged."
+  },
+  "performance": {
+    "score": 97,
+    "successfulCoverageRuns": 4,
+    "weightedLcpMs": 967,
+    "weightedCls": 0,
+    "weightedTbtMs": 0,
+    "profiles": {
+      "mobileSlowScore": 92,
+      "mobileSlowLcpMs": 2710,
+      "mobileMidScore": 100,
+      "mobileMidLcpMs": 1360,
+      "mobileFastScore": 100,
+      "mobileFastLcpMs": 606,
+      "desktopScore": 100,
+      "desktopLcpMs": 327
+    },
+    "note": "The weighted coverage profile clears the good LCP gate. Ahrefs and CrUX were intentionally disabled for local iteration."
+  },
+  "verification": {
+    "lighthouseMobile": {
+      "performance": 100,
+      "accessibility": 100,
+      "bestPractices": 100,
+      "seo": 100,
+      "agenticBrowsing": 100
+    },
+    "build": "TypeScript project build and Vite production build pass",
+    "lint": "pass with two pre-existing no-useless-escape warnings in analytics.ts",
+    "functionalJourney": "Submitting octocat through local Cloudflare Pages returned the live Octocat profile, four analyzed repositories, fourteen commits, additions, deletions, and net change with no visible errors.",
+    "footer": {
+      "askAiSource": "pass",
+      "projectStripSource": "pass",
+      "note": "Both shared scripts are wired. The currently deployed SaaS Maker loader still hides the strip; the already-qualified shared candidate restores the required composition without a GitStat deploy."
+    },
+    "responsiveScreenshots": [
+      "../../../artifacts/design/after-390.png",
+      "../../../artifacts/design/after-768.png",
+      "../../../artifacts/design/after-current-desktop.jpg"
+    ]
+  },
+  "limitations": [
+    "No deployment, commit, push, DNS change, or production configuration change was performed.",
+    "Production GEO and the composed project strip require an authorized release of already-qualified source changes."
+  ]
+}
