@@ -1001,7 +1001,7 @@ function IllustrativeLedger() {
 
   return (
     <div className="relative" aria-label="Illustrative GitStat repository ledger">
-      <div className="absolute -inset-8 -z-10 bg-blue-500/5 blur-3xl" aria-hidden="true" />
+      <div className="absolute inset-0 -z-10 bg-blue-500/5 blur-3xl" aria-hidden="true" />
       <div className="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900/85 shadow-2xl shadow-black/40">
         <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 font-mono text-[10px] text-zinc-400">
           <span>Repository distribution</span>
