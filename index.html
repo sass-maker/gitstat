@@ -36,12 +36,21 @@
         }
       }
     </script>
+    <script>
+      (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window,document,"clarity","script","y6bru7gtx7");
+      window.clarity("set","project_id","gitstat");
+    </script>
     <style>
       .initial-shell { min-height: 100vh; box-sizing: border-box; padding: 4rem 1.5rem; background: #09090b; color: #f4f4f5; font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
       .initial-shell > div { max-width: 56rem; margin: 0 auto; }
       .initial-shell h1 { max-width: 13ch; margin: 1rem 0; font-size: clamp(2.5rem, 8vw, 4.75rem); line-height: .95; letter-spacing: -.045em; }
       .initial-shell p { max-width: 46rem; color: #a1a1aa; }
     </style>
+    <script src="/app-health-log.js" defer></script>
   </head>
   <body>
     <div id="root">
@@ -53,7 +62,7 @@
           <h2>Analytics that stay separate</h2>
           <p>GitStat keeps commits, additions, deletions, net change, repository concentration, languages, cadence, collaboration, pull requests, issues, inactivity gaps, and AI signals in distinct views. It does not compress them into a single productivity score, and the dashboard keeps links to the underlying public repositories.</p>
           <h2>Current access and data boundary</h2>
-          <p>The current product analyzes public GitHub data only; the earlier optional OAuth and private-repository connection is not exposed. GitHub responses are processed in the browser and cached on this device for one hour. GitStat has no user account store, paid tier, checkout, or product analytics tracking. AI involvement is inferred from sampled public commit metadata and is not proof of authorship.</p>
+          <p>The current product analyzes public GitHub data only; the earlier optional OAuth and private-repository connection is not exposed. GitHub responses are processed in the browser and cached on this device for one hour. GitStat has no user account store, paid tier, or checkout. Microsoft Clarity measures site interaction; the username field is masked. AI involvement is inferred from sampled public commit metadata and is not proof of authorship.</p>
           <h2>What happens after a username is submitted</h2>
           <p>The dashboard discovers public personal and organization repositories, reads contribution statistics with retry handling, and progressively fills the analysis views. Time-period filters and generated-file exclusions remain adjustable. Large footprints can take longer or wait for the shared GitHub API allowance to reset; that operational limit is shown instead of being hidden behind an invented premium plan.</p>
         </div>
