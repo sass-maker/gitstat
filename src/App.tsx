@@ -893,8 +893,8 @@ export default function App() {
             <p className="text-sm font-semibold text-zinc-100">gitstat</p>
             <p className="mt-2 max-w-xl text-xs leading-6">
               Free, public GitHub analytics with no account or paywall. Public responses are
-              processed in your browser, cached on this device for one hour, and never used for
-              product analytics.
+              processed in your browser and cached on this device for one hour. Microsoft Clarity
+              measures site interaction; the username field is masked before collection.
             </p>
           </div>
           <nav className="flex shrink-0 gap-4 text-xs" aria-label="GitStat links">
@@ -967,6 +967,7 @@ function UsernameForm({
       <label htmlFor="github-username" className="sr-only">GitHub username</label>
       <input
         id="github-username"
+        data-clarity-mask="true"
         type="text"
         value={username}
         onChange={(event) => onUsernameChange(event.target.value)}

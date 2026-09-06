@@ -13,7 +13,7 @@ Do not use GitStat as a productivity score, an authorship oracle, or evidence ab
 - Free and public; no account or payment is required.
 - The current public experience does not expose private repositories or an OAuth connection.
 - GitHub responses are processed in the browser and cached on the current device for one hour.
-- There is no product analytics tracking and no GitStat account store.
+- Microsoft Clarity measures site interaction; the GitHub username field is masked before collection. There is no GitStat account store.
 - Results link back to the underlying public repositories.
 
 ## Surfaces

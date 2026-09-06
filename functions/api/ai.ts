@@ -19,7 +19,9 @@ const product = {
   dataBoundary: {
     processing: 'browser',
     cache: 'local device, one-hour TTL',
-    productAnalytics: false,
+    productAnalytics: true,
+    analyticsBoundary:
+      'Microsoft Clarity measures site interaction; the GitHub username field is masked before collection.',
     serverAccountStore: false,
   },
   caveats: [
