@@ -496,9 +496,12 @@ export default function App() {
             )}
             <a
               href="https://github.com/sass-maker/gitstat"
-              className="text-xs text-zinc-400 transition-colors hover:text-zinc-100"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Source code on GitHub"
+              className="flex size-11 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             >
-              Source
+              <GithubIcon />
             </a>
           </div>
         </div>
@@ -898,12 +901,28 @@ export default function App() {
             </p>
           </div>
           <nav className="flex shrink-0 gap-4 text-xs" aria-label="GitStat links">
-            <a className="hover:text-zinc-100" href="https://github.com/sass-maker/gitstat">Source</a>
+            <a
+              className="flex size-11 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+              href="https://github.com/sass-maker/gitstat"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Source code on GitHub"
+            >
+              <GithubIcon />
+            </a>
             <a className="hover:text-zinc-100" href="https://sassmaker.com/p/gitstat">SaaS Maker profile</a>
           </nav>
         </div>
       </footer>
     </div>
+  )
+}
+
+function GithubIcon() {
+  return (
+    <svg aria-hidden="true" className="size-5" viewBox="0 0 19 19" focusable="false">
+      <use href="/icons.svg#github-icon" />
+    </svg>
   )
 }
 
