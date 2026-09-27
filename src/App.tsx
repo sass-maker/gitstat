@@ -901,13 +901,13 @@ export default function App() {
         )}
       </main>
       <footer className="border-t border-zinc-800 px-6 py-8 text-zinc-400">
-        <saas-newsletter-capture
+        <saas-maker-newsletter-capture
           catalog-id="gitstat"
           product-name="GitStat"
           kind="newsletter"
           source="footer"
           theme="dark"
-        ></saas-newsletter-capture>
+        ></saas-maker-newsletter-capture>
         <div className="mx-auto flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-zinc-100">gitstat</p>
