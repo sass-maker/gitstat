@@ -36,6 +36,16 @@ import './App.css'
 type AppState = 'idle' | 'fetching' | 'done' | 'error'
 type Tab = 'overview' | 'activity' | 'churn' | 'ai' | 'patterns' | 'prs' | 'issues' | 'repos'
 
+declare global {
+  interface Window {
+    appHealth?: { track?: (eventName: string) => void }
+  }
+}
+
+function trackCTA(eventName: string) {
+  window.appHealth?.track?.(eventName)
+}
+
 function formatNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
@@ -565,7 +575,7 @@ export default function App() {
                   {fetchingCommits && ' · scanning commits for AI…'}
                 </span>
                 <button
-                  onClick={() => handleFetch(true)}
+                  onClick={() => { trackCTA('cta.analysis_refreshed'); handleFetch(true) }}
                   className="text-blue-400 hover:text-blue-300"
                 >
                   Refresh
@@ -891,6 +901,13 @@ export default function App() {
         )}
       </main>
       <footer className="border-t border-zinc-800 px-6 py-8 text-zinc-400">
+        <saas-newsletter-capture
+          catalog-id="gitstat"
+          product-name="GitStat"
+          kind="newsletter"
+          source="footer"
+          theme="dark"
+        ></saas-newsletter-capture>
         <div className="mx-auto flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-zinc-100">gitstat</p>
@@ -902,6 +919,8 @@ export default function App() {
           </div>
           <nav className="flex shrink-0 gap-4 text-xs" aria-label="GitStat links">
             <a
+              data-log="cta.source_repository_opened"
+              onClick={() => trackCTA('cta.source_repository_opened')}
               className="flex size-11 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
               href="https://github.com/sass-maker/gitstat"
               target="_blank"
@@ -981,6 +1000,11 @@ function UsernameForm({
   busy: boolean
   compact?: boolean
 }) {
+  const submit = () => {
+    trackCTA('cta.analysis_started')
+    onSubmit()
+  }
+
   return (
     <div className={compact ? 'mb-6 flex gap-2' : 'mt-8 flex gap-2 rounded-xl border border-zinc-700 bg-zinc-900/80 p-2 shadow-2xl shadow-black/20'}>
       <label htmlFor="github-username" className="sr-only">GitHub username</label>
@@ -990,7 +1014,7 @@ function UsernameForm({
         type="text"
         value={username}
         onChange={(event) => onUsernameChange(event.target.value)}
-        onKeyDown={(event) => event.key === 'Enter' && onSubmit()}
+        onKeyDown={(event) => event.key === 'Enter' && submit()}
         placeholder="Enter a GitHub username"
         autoComplete="off"
         spellCheck={false}
@@ -1002,7 +1026,7 @@ function UsernameForm({
       />
       <button
         type="button"
-        onClick={onSubmit}
+        onClick={submit}
         disabled={!username.trim() || busy}
         className="shrink-0 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40 sm:px-5"
       >
