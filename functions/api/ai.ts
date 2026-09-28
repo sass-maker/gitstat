@@ -1,3 +1,7 @@
+import { withPagesFunctionHealth } from '@saas-maker/app-health/pages'
+
+import { appHealthClient, type AppHealthBindings } from '../lib/app-health.ts'
+
 const product = {
   schemaVersion: 1,
   name: 'GitStat',
@@ -21,7 +25,7 @@ const product = {
     cache: 'local device, one-hour TTL',
     productAnalytics: true,
     analyticsBoundary:
-      'Microsoft Clarity measures site interaction; the GitHub username field is masked before collection.',
+      'Microsoft Clarity measures site interaction; the GitHub username field is masked before collection. When enabled, App Health receives only method, fixed API route, status, and duration summaries.',
     serverAccountStore: false,
   },
   caveats: [
@@ -32,7 +36,7 @@ const product = {
   source: 'https://github.com/sass-maker/gitstat',
 }
 
-export const onRequestGet: PagesFunction = async ({ request }) => {
+const handleRequestGet: PagesFunction<AppHealthBindings> = async ({ request }) => {
   const origin = new URL(request.url).origin
   const catalog = {
     ...product,
@@ -51,3 +55,13 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
     },
   })
 }
+
+export const onRequestGet: PagesFunction<AppHealthBindings> = withPagesFunctionHealth<
+  AppHealthBindings,
+  string,
+  Record<string, unknown>,
+  Response
+>(
+  { client: ({ env }) => appHealthClient(env), route: '/api/ai' },
+  (context) => handleRequestGet(context as unknown as Parameters<PagesFunction<AppHealthBindings>>[0]),
+)

@@ -916,7 +916,9 @@ export default function App() {
             <p className="mt-2 max-w-xl text-xs leading-6">
               Free, public GitHub analytics with no account or paywall. Public responses are
               processed in your browser and cached on this device for one hour. Microsoft Clarity
-              measures site interaction; the username field is masked before collection.
+              measures site interaction; the username field is masked before collection. If
+              optional server-side App Health monitoring is configured, it receives only the
+              method, fixed API route, response status, and duration, never request values.
             </p>
           </div>
           <nav className="flex shrink-0 gap-4 text-xs" aria-label="GitStat links">

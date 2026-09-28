@@ -1,6 +1,8 @@
 // Cloudflare Pages Functions type declarations
 interface Env {
   GH_PUBLIC_TOKEN?: string
+  APP_HEALTH_INGEST_KEY?: string
+  APP_HEALTH_ENVIRONMENT?: string
 }
 
 interface PagesFunction<EnvType = Env> {

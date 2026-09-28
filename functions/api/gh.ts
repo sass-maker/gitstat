@@ -13,7 +13,11 @@
 // For local dev, create a .env file with GH_PUBLIC_TOKEN=ghp_...
 // or use a fine-grained PAT with public read access.
 
-interface GhEnv {
+import { withPagesFunctionHealth } from '@saas-maker/app-health/pages'
+
+import { appHealthClient, type AppHealthBindings } from '../lib/app-health.ts'
+
+interface GhEnv extends AppHealthBindings {
   GH_PUBLIC_TOKEN?: string
 }
 
@@ -42,7 +46,7 @@ function forwardRateLimitHeaders(resp: Response): Record<string, string> {
   return h
 }
 
-export const onRequestGet: PagesFunction<GhEnv> = async ({ request, env }) => {
+const handleRequestGet: PagesFunction<GhEnv> = async ({ request, env }) => {
   const url = new URL(request.url)
   const path = url.searchParams.get('path')
   if (!path) {
@@ -65,7 +69,7 @@ export const onRequestGet: PagesFunction<GhEnv> = async ({ request, env }) => {
 }
 
 // GraphQL POST proxy — body is { query: string, variables: object }
-export const onRequestPost: PagesFunction<GhEnv> = async ({ request, env }) => {
+const handleRequestPost: PagesFunction<GhEnv> = async ({ request, env }) => {
   let body: string
   try {
     body = await request.text()
@@ -94,3 +98,22 @@ export const onRequestPost: PagesFunction<GhEnv> = async ({ request, env }) => {
     })
   }
 }
+
+const healthOptions = {
+  client: ({ env }: { env: GhEnv }) => appHealthClient(env),
+  route: '/api/gh',
+}
+
+export const onRequestGet: PagesFunction<GhEnv> = withPagesFunctionHealth<
+  GhEnv,
+  string,
+  Record<string, unknown>,
+  Response
+>(healthOptions, (context) => handleRequestGet(context as unknown as Parameters<PagesFunction<GhEnv>>[0]))
+
+export const onRequestPost: PagesFunction<GhEnv> = withPagesFunctionHealth<
+  GhEnv,
+  string,
+  Record<string, unknown>,
+  Response
+>(healthOptions, (context) => handleRequestPost(context as unknown as Parameters<PagesFunction<GhEnv>>[0]))
