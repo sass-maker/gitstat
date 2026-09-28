@@ -38,12 +38,14 @@ type Tab = 'overview' | 'activity' | 'churn' | 'ai' | 'patterns' | 'prs' | 'issu
 
 declare global {
   interface Window {
-    appHealth?: { track?: (eventName: string) => void }
+    appHealth?: { track?: (eventName: string) => void; flush?: () => Promise<void> }
   }
 }
 
 function trackCTA(eventName: string) {
-  window.appHealth?.track?.(eventName)
+  const appHealth = window.appHealth
+  appHealth?.track?.(eventName)
+  void appHealth?.flush?.().catch(() => {})
 }
 
 function formatNum(n: number): string {
