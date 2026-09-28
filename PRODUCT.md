@@ -51,7 +51,9 @@ required for the current public-repository experience.
 - localStorage caching with 1hr TTL and manual refresh.
 - Rate limit display with reset countdown.
 - Must remain free and public. The thin GitHub proxy does not store response
-  data. Microsoft Clarity measures site interaction with the username field masked. No accounts.
+  data. Microsoft Clarity measures site interaction with the username field masked. When the
+  optional server-side App Health key is configured, API endpoint summaries include only the
+  method, fixed route, status, and duration. No accounts.
 
 ## Brand Commitments
 
@@ -73,5 +75,5 @@ required for the current public-repository experience.
 1. Density over decoration — every pixel earns its place with data.
 2. Any username, not just your own — the tool is for looking at anyone.
 3. Analytics depth is the differentiator — go beyond counts into patterns.
-4. Client-first — no product data server state, account, or paywall; bounded Clarity interaction analytics keep the username field masked.
+4. Client-first — no product data server state, account, or paywall; bounded Clarity interaction analytics keep the username field masked, and optional server endpoint health summaries contain no request values.
 5. Fast to first insight — cache aggressively, stream partial results.

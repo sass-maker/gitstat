@@ -23,7 +23,7 @@ GitStat keeps those dimensions separate so activity is not collapsed into one mi
 
 GitStat is free and public. No account, subscription, or payment is required. The current product analyzes public GitHub data; it does not currently expose the earlier optional OAuth/private-repository connection.
 
-GitHub responses are processed in the browser and cached on the current device for one hour. GitStat has no user account store. Microsoft Clarity measures site interaction, and the username field is masked before collection.
+GitHub responses are processed in the browser and cached on the current device for one hour. GitStat has no user account store. Microsoft Clarity measures site interaction, and the username field is masked before collection. If optional server-side App Health monitoring is configured, it receives only the method, fixed API route, response status, and duration; it does not receive usernames, repository names, query values, headers, or request/response bodies.
 
 ## Boundaries
 

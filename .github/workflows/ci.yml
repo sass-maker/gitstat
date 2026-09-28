@@ -26,5 +26,6 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run lint
+      - run: npm run test:app-health
       # `build` is `tsc -b && vite build`, so this is the typecheck gate too.
       - run: npm run build
