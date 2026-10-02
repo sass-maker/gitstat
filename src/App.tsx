@@ -32,6 +32,7 @@ import {
   type FilterSettings,
 } from './lib/filters'
 import './App.css'
+import { getEmptyAnalysisMessage } from './lib/analysis-status'
 
 type AppState = 'idle' | 'fetching' | 'done' | 'error'
 type Tab = 'overview' | 'activity' | 'churn' | 'ai' | 'patterns' | 'prs' | 'issues' | 'repos'
@@ -97,6 +98,7 @@ export default function App() {
   const [progress, setProgress] = useState<FetchProgress | null>(null)
   const [repoStats, setRepoStats] = useState<RepoStats[]>([])
   const [totals, setTotals] = useState<GrandTotals | null>(null)
+  const [discoveredRepos, setDiscoveredRepos] = useState<number | null>(null)
   const [error, setError] = useState<string>('')
   const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null)
   const [sortBy, setSortBy] = useState<'commits' | 'additions' | 'deletions' | 'net' | 'repo'>('commits')
@@ -294,6 +296,7 @@ export default function App() {
       if (cached) {
         setRepoStats(cached.repoStats)
         setTotals(cached.totals)
+        setDiscoveredRepos(cached.discoveredRepos ?? null)
         setFromCache(true)
         setLastRefreshAt(cached.fetchedAt)
         setState('done')
@@ -302,6 +305,8 @@ export default function App() {
     }
 
     setState('fetching')
+    setProgress(null)
+    setDiscoveredRepos(null)
     setFromCache(false)
     cancelRef.current = false
 
@@ -314,6 +319,7 @@ export default function App() {
       }
 
       const { repos } = await getAllRepos(username.trim(), token || undefined)
+      setDiscoveredRepos(repos.length)
       setProgress({ total: repos.length, processed: 0, skipped: 0, current: '' })
 
       const results: RepoStats[] = []
@@ -377,6 +383,7 @@ export default function App() {
         repoStats: results,
         orgStats: [],
         totals: grandTotals,
+        discoveredRepos: repos.length,
       })
 
       setState('done')
@@ -399,6 +406,7 @@ export default function App() {
           repoStats: reposWithLangs,
           orgStats: [],
           totals: grandTotals,
+          discoveredRepos: repos.length,
         })
       }
       setFetchingLangs(false)
@@ -576,6 +584,11 @@ export default function App() {
         {/* Results */}
         {state === 'done' && totals && (
           <div className="space-y-6">
+            {totals.repos === 0 && (
+              <p className="text-sm text-zinc-400" role="status">
+                {getEmptyAnalysisMessage(discoveredRepos)}
+              </p>
+            )}
             {fromCache && (
               <div className="flex items-center justify-between text-[10px] text-zinc-400">
                 <span>

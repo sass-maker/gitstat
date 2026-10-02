@@ -44,6 +44,7 @@ export interface CachedResults {
   repoStats: RepoStats[]
   orgStats: OrgStats[]
   totals: GrandTotals
+  discoveredRepos?: number
 }
 
 export interface RateLimitInfo {
