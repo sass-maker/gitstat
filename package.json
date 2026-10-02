@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test:app-health": "node --experimental-strip-types --test functions/app-health.test.ts",
+    "test:lookup": "node --experimental-strip-types --test test/lookup.test.mjs",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler pages deploy dist --project-name gitstat --branch main --commit-hash \"$(git rev-parse HEAD)\""
   },

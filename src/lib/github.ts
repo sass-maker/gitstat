@@ -13,7 +13,7 @@ import type {
   ActivityEvent,
   PunchCardData,
 } from '../types'
-import { matchesExclusion } from './filters'
+import { matchesExclusion } from './filters.ts'
 
 const API_BASE = 'https://api.github.com'
 const PROXY_BASE = '/api/gh'
@@ -38,6 +38,7 @@ export class GitHubApiError extends Error {
 }
 
 function classifyError(err: unknown): GitHubErrorReason {
+  if (err instanceof GitHubApiError) return err.reason
   const status =
     (err as { status?: number })?.status ??
     (err as { response?: { status?: number } })?.response?.status
@@ -90,6 +91,7 @@ async function withRetry<T>(
       const reason = classifyError(err)
 
       if (reason === 'auth' || reason === 'not_found') {
+        if (err instanceof GitHubApiError) throw err
         throw new GitHubApiError(
           reason === 'auth'
             ? 'GitHub rejected the access token. Reconnect GitHub and try again.'
@@ -164,7 +166,7 @@ async function ghFetch(path: string, token?: string): Promise<any> {
         const mins = Math.ceil((reset - Date.now() / 1000) / 60)
         throw new GitHubApiError(`Rate limit exceeded. Resets in ${mins} min.`, 'rate_limited')
       }
-      return null
+      throw new GitHubApiError('GitHub denied access to public data. Try again later.', 'auth')
     }
     if (!resp.ok) {
       const err = new Error(`GitHub API ${resp.status}: ${await resp.text()}`) as any
@@ -241,7 +243,8 @@ export async function getUserPublicOrgs(username: string, token?: string) {
   let page = 1
   while (true) {
     const batch = await ghFetch(`/users/${username}/orgs?per_page=100&page=${page}`, token)
-    if (!batch || batch.length === 0) break
+    if (!Array.isArray(batch)) throw new GitHubApiError('Public organization discovery is unavailable. Try again.', 'unknown')
+    if (batch.length === 0) break
     orgs.push(...batch)
     if (batch.length < 100) break
     page++
@@ -254,7 +257,8 @@ export async function getOrgRepos(org: string, token?: string): Promise<string[]
   let page = 1
   while (true) {
     const batch = await ghFetch(`/orgs/${org}/repos?per_page=100&page=${page}&type=public`, token)
-    if (!batch || batch.length === 0) break
+    if (!Array.isArray(batch)) throw new GitHubApiError('Public organization repository discovery is unavailable. Try again.', 'unknown')
+    if (batch.length === 0) break
     for (const r of batch) repos.push(r.full_name)
     if (batch.length < 100) break
     page++
@@ -286,7 +290,8 @@ export async function getPublicUserRepos(username: string, token?: string): Prom
   let page = 1
   while (true) {
     const batch = await ghFetch(`/users/${username}/repos?per_page=100&page=${page}&sort=pushed&type=public`, token)
-    if (!batch || batch.length === 0) break
+    if (!Array.isArray(batch)) throw new GitHubApiError('Public repository discovery is unavailable. Try again.', 'unknown')
+    if (batch.length === 0) break
     for (const r of batch) repos.push(r.full_name)
     if (batch.length < 100) break
     page++
