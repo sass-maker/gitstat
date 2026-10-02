@@ -538,6 +538,13 @@ export default function App() {
           </div>
         )}
 
+        {/* Initial account and repository discovery happens before per-repo progress is available. */}
+        {state === 'fetching' && !progress && (
+          <p className="mb-6 text-sm text-zinc-400" role="status">
+            Checking GitHub account and discovering repositories…
+          </p>
+        )}
+
         {/* Progress */}
         {progress && (
           <div className="mb-6" aria-live="polite">
