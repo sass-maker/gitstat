@@ -10,12 +10,16 @@ const originalFetch = globalThis.fetch
 test('shared footer loaders wait for the React-authored host instead of creating a body fallback', () => {
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8')
+  const authoredProject = app.match(/'data-fleet-footer-project': '([^']+)'/)?.[1]
+  assert.equal(authoredProject, 'gitstat')
   const loaders = [...html.matchAll(/<script\b[^>]*src="https:\/\/sassmaker\.com\/(?:project-strip|ai-chat-footer)\.js[^>]*>/g)]
   assert.equal(loaders.length, 2)
   for (const [loader] of loaders) {
     // data-host-only maps to the published loaders' script.dataset.hostOnly guard.
     assert.match(loader, /\bdata-host-only="true"/)
     assert.doesNotMatch(loader, /data-fleet-footer-host-only/)
+    // Both footer-connect listeners require dataset.project to match the late React host.
+    assert.equal(loader.match(/\bdata-project="([^"]+)"/)?.[1], authoredProject)
   }
   // React mounts after deferred loaders; it must remain the sole authored owner.
   assert.doesNotMatch(html, /<fleet-footer-extension\b/)
