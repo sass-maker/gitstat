@@ -925,7 +925,7 @@ export default function App() {
       {createElement('fleet-footer-extension', {
         'data-fleet-footer-project': 'gitstat',
         'product-name': 'GitStat',
-        signature: 'GitStat',
+        'signature-name': 'GitStat',
         'art-src': 'https://sassmaker.com/footer-art/gitstat.webp',
         'art-alt': 'A contribution-history weaving station where distinct repository threads form a chronological fabric while preserving their individual routes.',
         'art-width': '2171',
