@@ -1,10 +1,28 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { afterEach, test } from 'node:test'
 
 import { onRequestGet as getAiCatalog } from './api/ai.ts'
 import { onRequestGet as getGitHub, onRequestPost as postGitHub } from './api/gh.ts'
 
 const originalFetch = globalThis.fetch
+
+test('shared footer loaders wait for the React-authored host instead of creating a body fallback', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8')
+  const loaders = [...html.matchAll(/<script\b[^>]*src="https:\/\/sassmaker\.com\/(?:project-strip|ai-chat-footer)\.js[^>]*>/g)]
+  assert.equal(loaders.length, 2)
+  for (const [loader] of loaders) {
+    // data-host-only maps to the published loaders' script.dataset.hostOnly guard.
+    assert.match(loader, /\bdata-host-only="true"/)
+    assert.doesNotMatch(loader, /data-fleet-footer-host-only/)
+  }
+  // React mounts after deferred loaders; it must remain the sole authored owner.
+  assert.doesNotMatch(html, /<fleet-footer-extension\b/)
+  assert.equal([...app.matchAll(/createElement\('fleet-footer-extension'/g)].length, 1)
+  assert.match(app, /<footer slot="navigation" data-fleet-footer-navigation/)
+  assert.match(app, /<saas-maker-newsletter-capture slot="capture"/)
+})
 
 afterEach(() => {
   globalThis.fetch = originalFetch
