@@ -38,3 +38,19 @@ body {
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
 }
+
+/* Owner-selected Precise closing system; dashboard tokens remain native. */
+fleet-footer-extension.precise-footer {
+  display: block;
+  width: 100%;
+  --fleet-footer-canvas: #09090b;
+  --fleet-footer-lower: #09090b;
+  --fleet-footer-ink: #f4f4f5;
+  --fleet-footer-muted: #a1a1aa;
+  --fleet-footer-border: #3f3f46;
+  --fleet-footer-focus: #93c5fd;
+  --fleet-footer-ui-font: var(--fleet-footer-loaded-ui, system-ui, sans-serif);
+  --fleet-footer-mono-font: var(--fleet-footer-loaded-mono, ui-monospace, monospace);
+}
+.precise-footer [slot="navigation"] p { font-family: var(--fleet-footer-ui-font); }
+.precise-footer [slot="capture"] { --newsletter-capture-font: var(--fleet-footer-ui-font); }

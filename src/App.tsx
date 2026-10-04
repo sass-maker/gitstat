@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { createElement, useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { RepoStats, OrgStats, GrandTotals, FetchProgress, RateLimitInfo, CachedResults, MonthlyData, DayData, SummaryStats, LanguageStat, CommitInfo, AIInvolvementStats, ChurnStats, CommitPatterns, ContributionDay, UserProfile, RepoMetadata, ContributionTypes, PRInfo, PRStats, IssueInfo, IssueStats, TimePatterns, ConventionalCommitBreakdown, CollaborationStats, KeywordStats, GapAnalysis } from './types'
 import { getContributorStats, getAllRepos, getUser, getUserProfile, getRateLimitInfo, getRepoLanguages, getRepoCommits, getContributionCalendar, getContributionTypes, getUserPRs, getUserIssues, getPublicUserReposWithMeta, computeCommitQuality, GitHubApiError } from './lib/github'
 import { computeMonthlyData, computeDailyData, computeDailyDataFromCalendar, computeSummaryStats, computeLanguageStats, computeAIInvolvement, computeChurnStats, computeCommitPatterns, computeTimePatterns, computeConventionalBreakdown, computeCollaboration, computeKeywordStats, computeGapAnalysis, computePRStats, computeIssueStats } from './lib/analytics'
@@ -922,15 +922,32 @@ export default function App() {
           </div>
         )}
       </main>
-      <footer className="border-t border-zinc-800 px-6 py-8 text-zinc-400">
-        <saas-maker-newsletter-capture
+      {createElement('fleet-footer-extension', {
+        'data-fleet-footer-project': 'gitstat',
+        'product-name': 'GitStat',
+        'signature-name': 'GitStat',
+        'art-src': 'https://sassmaker.com/footer-art/gitstat.webp',
+        'art-alt': 'A contribution-history weaving station where distinct repository threads form a chronological fabric while preserving their individual routes.',
+        'art-width': '2171',
+        'art-height': '724',
+        'art-position': '50% 50%',
+        'art-credit': 'Original illustration for GitStat',
+        'font-base': 'https://sassmaker.com/fonts/fleet-footer-precise-v1/',
+        className: 'precise-footer',
+        surface: 'app',
+      }, <>
+        <saas-maker-newsletter-capture slot="capture"
+          layout="compact"
+          integrated
           catalog-id="gitstat"
           product-name="GitStat"
           kind="newsletter"
           source="footer"
           theme="dark"
         ></saas-maker-newsletter-capture>
-        <div className="mx-auto flex max-w-4xl flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <footer slot="navigation" data-fleet-footer-navigation className="text-zinc-400">
+
+        <div className="flex flex-col gap-6">
           <div>
             <p className="text-sm font-semibold text-zinc-100">gitstat</p>
             <p className="mt-2 max-w-xl text-xs leading-6">
@@ -941,7 +958,7 @@ export default function App() {
               method, fixed API route, response status, and duration, never request values.
             </p>
           </div>
-          <nav className="flex shrink-0 gap-4 text-xs" aria-label="GitStat links">
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm" aria-label="GitStat links">
             <a
               data-log="cta.source_repository_opened"
               onClick={() => trackCTA('cta.source_repository_opened')}
@@ -953,10 +970,11 @@ export default function App() {
             >
               <GithubIcon />
             </a>
-            <a className="hover:text-zinc-100" href="https://sassmaker.com/p/gitstat">SaaS Maker profile</a>
+            <a className="inline-flex min-h-11 items-center hover:text-zinc-100" href="https://sassmaker.com/p/gitstat">SaaS Maker profile</a>
           </nav>
         </div>
       </footer>
+      </>)}
     </div>
   )
 }
