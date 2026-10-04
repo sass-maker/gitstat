@@ -9,6 +9,8 @@ declare module 'react' {
         kind?: 'newsletter' | 'waitlist'
         source?: string
         theme?: 'dark' | 'light'
+        layout?: 'compact'
+        integrated?: boolean
       }
     }
   }
