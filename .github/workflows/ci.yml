@@ -20,12 +20,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
           node-version: '22'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm run lint
-      - run: npm run test:app-health
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm run lint
+      - run: pnpm run test:app-health
       # `build` is `tsc -b && vite build`, so this is the typecheck gate too.
-      - run: npm run build
+      - run: pnpm run build
