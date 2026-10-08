@@ -8,7 +8,7 @@
 // The proxy injects GH_PUBLIC_TOKEN from env and forwards the request.
 //
 // In production, set GH_PUBLIC_TOKEN via:
-//   npx wrangler pages secret put GH_PUBLIC_TOKEN --project-name gitstat
+//   pnpm exec wrangler pages secret put GH_PUBLIC_TOKEN --project-name gitstat
 //
 // For local dev, create a .env file with GH_PUBLIC_TOKEN=ghp_...
 // or use a fine-grained PAT with public read access.
